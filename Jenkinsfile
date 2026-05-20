@@ -5,11 +5,6 @@ pipeline {
         DOCKER_IMAGE = "sirrj4rvis/smart-parking"
     }
 
-    tools {
-        jdk 'JDK17'
-        maven 'Maven'
-    }
-
     stages {
 
         stage('Clone Repository') {
@@ -20,9 +15,9 @@ pipeline {
             }
         }
 
-        stage('Build Project') {
+        stage('Install Python Dependencies') {
             steps {
-                bat 'mvn clean install'
+                bat 'pip install -r requirements.txt'
             }
         }
 
@@ -39,8 +34,7 @@ pipeline {
                         -Dsonar.projectKey=sirrj4rvis_smart-parking ^
                         -Dsonar.organization=sirrj4rvis ^
                         -Dsonar.sources=. ^
-                        -Dsonar.host.url=https://sonarcloud.io ^
-                        -Dsonar.token=%SONAR_AUTH_TOKEN%
+                        -Dsonar.host.url=https://sonarcloud.io
                         """
                     }
                 }
@@ -80,4 +74,4 @@ pipeline {
             }
         }
     }
-}
+}g
