@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "YOUR_DOCKERHUB_USERNAME/smart-parking"
+        DOCKER_IMAGE = "sirrj4vis/smart-parking"
     }
 
     tools {
-        sonarQubeScanner 'sonar-scanner'
+        jdk 'JDK17'
+        maven 'Maven'
     }
 
     stages {
@@ -14,21 +15,34 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git branch: 'main',
+                credentialsId: 'github-token',
                 url: 'https://github.com/sirrj4vis/smart-parking.git'
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                bat 'mvn clean install'
             }
         }
 
         stage('SonarCloud Analysis') {
             steps {
-                withSonarQubeEnv('sonarcloud') {
+                script {
 
-                    bat """
-                    sonar-scanner ^
-                    -Dsonar.projectKey=sirrj4vis_smart-parking ^
-                    -Dsonar.organization=sirrj4vis ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=https://sonarcloud.io
-                    """
+                    def scannerHome = tool 'sonar-scanner'
+
+                    withSonarQubeEnv('sonar-server') {
+
+                        bat """
+                        ${scannerHome}\\bin\\sonar-scanner.bat ^
+                        -Dsonar.projectKey=sirrj4vis_smart-parking ^
+                        -Dsonar.organization=sirrj4vis ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=https://sonarcloud.io ^
+                        -Dsonar.token=%SONAR_AUTH_TOKEN%
+                        """
+                    }
                 }
             }
         }
