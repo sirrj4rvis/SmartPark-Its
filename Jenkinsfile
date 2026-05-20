@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "sirrj4vis/smart-parking"
+        DOCKER_IMAGE = "sirrj4rvis/smart-parking"
     }
 
     tools {
@@ -16,7 +16,7 @@ pipeline {
             steps {
                 git branch: 'main',
                 credentialsId: 'github-token',
-                url: 'https://github.com/sirrj4vis/smart-parking.git'
+                url: 'https://github.com/sirrj4rvis/smart-parking.git'
             }
         }
 
@@ -36,8 +36,8 @@ pipeline {
 
                         bat """
                         ${scannerHome}\\bin\\sonar-scanner.bat ^
-                        -Dsonar.projectKey=sirrj4vis_smart-parking ^
-                        -Dsonar.organization=sirrj4vis ^
+                        -Dsonar.projectKey=sirrj4rvis_smart-parking ^
+                        -Dsonar.organization=sirrj4rvis ^
                         -Dsonar.sources=. ^
                         -Dsonar.host.url=https://sonarcloud.io ^
                         -Dsonar.token=%SONAR_AUTH_TOKEN%
