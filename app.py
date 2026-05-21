@@ -480,6 +480,11 @@ def api_slots():
 # Run the App
 # ------------------------------------
 
+
 if __name__ == '__main__':
-    init_db()        # create tables + seed data on first run
-    app.run(debug=True, port=5000)
+    init_db()      # create tables + seed data on first run
+
+    import os
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(host="0.0.0.0", port=port, debug=True)
