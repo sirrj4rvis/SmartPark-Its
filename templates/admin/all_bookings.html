@@ -11,8 +11,8 @@
         </div>
         <div class="header-actions">
             <form method="GET" action="{{ url_for('admin.all_bookings') }}" style="display:flex;gap:.5rem;">
-                <input type="text" name="q" value="{{ search or '' }}" placeholder="Search vehicle, user, slot…"
-                       class="form-input" style="max-width:240px;">
+                <input type="text" name="q" value="{{ search or '' }}" placeholder="Search bookings…"
+                       class="form-input" style="width:220px;">
                 <button type="submit" class="btn btn-sm btn-outline"><i class="fas fa-search"></i></button>
             </form>
         </div>
