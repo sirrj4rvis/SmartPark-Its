@@ -11,7 +11,7 @@ pipeline {
             steps {
                 git branch: 'main',
                 credentialsId: 'github-token',
-                url: 'https://github.com/sirrj4rvis/SmartPark-ITS.git'
+                url: 'https://github.com/sirrj4rvis/SmartPark-Its.git'
             }
         }
 
