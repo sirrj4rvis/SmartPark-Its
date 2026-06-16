@@ -30,6 +30,10 @@ sentry-sdk[flask]>=2.10.0
 # --- Features ---
 qrcode[pil]>=7.4.2
 razorpay>=1.4.2
+# ANPR (license-plate recognition). Needs the `tesseract-ocr` system binary (in Dockerfile).
+opencv-python-headless>=4.10.0
+pytesseract>=0.3.10
+numpy>=1.26.0
 
 # --- Testing / load ---
 pytest>=8.3.2

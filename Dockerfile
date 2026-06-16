@@ -13,6 +13,10 @@ ENV PYTHONUNBUFFERED=1 \
     FLASK_ENV=production \
     PORT=5000
 
+# Tesseract OCR engine for ANPR (license-plate recognition).
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
 # Non-root user for security.
 RUN useradd --create-home --uid 10001 appuser
 WORKDIR /app

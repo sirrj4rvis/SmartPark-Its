@@ -27,6 +27,7 @@ from ...models import Booking, Role, User
 from ...security import authenticate
 from ...services import (
     analytics_service,
+    anpr_service,
     booking_service,
     forecast_service,
     geo_service,
@@ -146,6 +147,22 @@ def forecast():
     return jsonify(forecast_service.next_24h_forecast())
 
 
+@api_v1_bp.post("/anpr")
+@limiter.limit("30 per minute")
+def anpr():
+    """Recognize a number plate from an uploaded image (multipart 'image')."""
+    file = request.files.get("image")
+    if not file:
+        return jsonify({"error": "an 'image' file is required"}), 400
+    data = file.read()
+    if not data:
+        return jsonify({"error": "empty image"}), 400
+    result = anpr_service.recognize_plate(data)
+    if not result.get("ocr_available"):
+        return jsonify({**result, "message": "OCR engine not installed on server"}), 503
+    return jsonify(result)
+
+
 @api_v1_bp.get("/analytics")
 @jwt_required()
 def analytics():
@@ -205,6 +222,7 @@ def _openapi_spec():
             "/api/v1/bookings/{id}/exit": {"post": path("Exit a booking", secured=True,
                 params=[{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}])},
             "/api/v1/forecast": {"get": path("24h occupancy forecast")},
+            "/api/v1/anpr": {"post": path("Recognize a number plate from an uploaded image (multipart 'image')")},
             "/api/v1/analytics": {"get": path("Admin analytics", secured=True)},
         },
     }
