@@ -45,6 +45,7 @@
                     <li><a href="{{ url_for('user.dashboard') }}" class="nav-link">Dashboard</a></li>
                     <li><a href="{{ url_for('user.my_bookings') }}" class="nav-link">My Bookings</a></li>
                 {% endif %}
+                <li><a href="{{ url_for('settings.index') }}" class="nav-link">Settings</a></li>
                 <li>
                     <a href="{{ url_for('auth.logout') }}" class="nav-link btn-nav-logout">
                         <i class="fas fa-sign-out-alt"></i> Logout ({{ session.get('name', '').split()[0] }})

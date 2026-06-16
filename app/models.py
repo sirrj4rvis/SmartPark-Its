@@ -74,6 +74,7 @@ class User(db.Model):
     role = db.Column(db.Enum(Role), nullable=False, default=Role.user)
     failed_logins = db.Column(db.Integer, nullable=False, default=0)
     locked_until = db.Column(db.DateTime(timezone=True), nullable=True)
+    email_notifications = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
     bookings = db.relationship("Booking", back_populates="user", lazy="dynamic")
@@ -277,3 +278,12 @@ class WebhookEvent(db.Model):
     event_id = db.Column(db.String(120), primary_key=True)
     provider = db.Column(db.String(32), nullable=False)
     received_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class AppSetting(db.Model):
+    """Runtime-editable key/value config (admin Settings page overrides env defaults)."""
+    __tablename__ = "app_settings"
+
+    key = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.String(255), nullable=False, default="")
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)

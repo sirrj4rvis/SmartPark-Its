@@ -94,14 +94,18 @@ def create_payment_for_booking(booking: Booking) -> Payment:
 
 
 def upi_enabled() -> bool:
-    return bool(current_app.config.get("UPI_VPA"))
+    from . import settings_service
+
+    return bool(settings_service.get("upi_vpa"))
 
 
 def upi_payment_uri(payment: Payment) -> str:
     """Build a standard UPI deep link. Scanning it in any UPI app pre-fills the
     payee VPA and the exact amount (NPCI UPI URI spec)."""
-    vpa = current_app.config["UPI_VPA"]
-    name = current_app.config["UPI_PAYEE_NAME"]
+    from . import settings_service
+
+    vpa = settings_service.get("upi_vpa")
+    name = settings_service.get("upi_payee_name")
     note = f"SmartPark booking #{payment.booking_id}"
     return (
         f"upi://pay?pa={quote(vpa)}&pn={quote(name)}"

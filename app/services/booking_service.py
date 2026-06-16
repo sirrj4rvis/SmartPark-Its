@@ -52,7 +52,9 @@ def reserve_slot(user_id: int, slot_id: int) -> ParkingSlot:
     _release_if_reservation_expired(slot)
     if slot.status != SlotStatus.available:
         raise BookingError(f"Slot {slot.slot_number} is not available.")
-    ttl = current_app.config["RESERVATION_TTL_MINUTES"]
+    from . import settings_service
+
+    ttl = settings_service.get("reservation_ttl_minutes")
     slot.status = SlotStatus.reserved
     slot.reserved_until = utcnow() + timedelta(minutes=ttl)
     db.session.commit()
