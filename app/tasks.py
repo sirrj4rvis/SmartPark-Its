@@ -23,6 +23,13 @@ def init_celery(app):
             "reprice-slots": {"task": "app.tasks.reprice", "schedule": 120.0},
         },
         timezone="UTC",
+        # Survive a transient broker outage instead of crashing the worker.
+        broker_connection_retry_on_startup=True,
+        broker_transport_options={"visibility_timeout": 3600},
+        # RedBeat stores the schedule in Redis: it survives beat restarts and is
+        # safe if more than one beat is ever running (it holds a lock).
+        redbeat_redis_url=app.config["CELERY_BROKER_URL"],
+        redbeat_lock_timeout=90,
     )
 
     class ContextTask(celery_app.Task):
@@ -34,8 +41,15 @@ def init_celery(app):
     return celery_app
 
 
-@shared_task(name="app.tasks.sweep_reservations")
-def sweep_reservations():
+@shared_task(
+    name="app.tasks.sweep_reservations",
+    bind=True,
+    autoretry_for=(Exception,),
+    max_retries=3,
+    default_retry_delay=30,
+    retry_backoff=True,
+)
+def sweep_reservations(self):
     from .services import booking_service
     from .realtime import broadcast_slots
 
@@ -45,8 +59,15 @@ def sweep_reservations():
     return released
 
 
-@shared_task(name="app.tasks.reprice")
-def reprice():
+@shared_task(
+    name="app.tasks.reprice",
+    bind=True,
+    autoretry_for=(Exception,),
+    max_retries=3,
+    default_retry_delay=30,
+    retry_backoff=True,
+)
+def reprice(self):
     from .services import pricing_service
 
     return pricing_service.reprice_all()

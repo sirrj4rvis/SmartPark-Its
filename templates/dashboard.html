@@ -54,11 +54,11 @@
                 <strong>Active Booking — Slot {{ active_booking['slot_number'] }}</strong>
                 <br>
                 <small>Vehicle: {{ active_booking['vehicle_number'] }} &nbsp;|&nbsp;
-                Started: {{ active_booking['start_time'] }}</small>
+                Started: <span id="startedAt" data-start="{{ active_booking['start_iso'] }}">—</span>
             </div>
         </div>
         <div class="active-right">
-            <div class="live-timer" id="liveTimer" data-start="{{ active_booking['start_time'] }}">
+            <div class="live-timer" id="liveTimer" data-start="{{ active_booking['start_iso'] }}">
                 Calculating...
             </div>
             <form method="POST" action="{{ url_for('user.exit_slot', booking_id=active_booking['id']) }}"
@@ -126,16 +126,20 @@
                 <small data-rate><i class="fas fa-rupee-sign"></i> ₹{{ slot['rate_per_hour']|int }}/hr</small>
             </div>
 
-            <!-- Book button (only if available and no active booking) -->
-            {% if slot['status'] == 'available' and not active_booking %}
+            <!-- Booking action -->
+            {% if active_booking and active_booking['slot_id'] == slot['id'] %}
+                <span class="your-slot-label">Your Slot</span>
+            {% elif slot['status'] == 'available' and not active_booking %}
                 <a href="{{ url_for('user.book_slot', slot_id=slot['id']) }}"
                    class="btn btn-book" id="bookBtn-{{ slot['id'] }}">
                     <i class="fas fa-plus"></i> Book Slot
                 </a>
-            {% elif active_booking and active_booking['slot_id'] == slot['id'] %}
-                <span class="your-slot-label">Your Slot</span>
+            {% elif slot['status'] == 'available' and active_booking %}
+                <span class="slot-unavail-label" title="You already have an active booking. Exit it first to book another slot.">
+                    <i class="fas fa-lock"></i> One booking at a time
+                </span>
             {% else %}
-                <span class="slot-unavail-label">Unavailable</span>
+                <span class="slot-unavail-label"><i class="fas fa-ban"></i> Occupied</span>
             {% endif %}
         </div>
         {% endfor %}

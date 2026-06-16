@@ -1,0 +1,1191 @@
+[
+  {
+    "id": "TC001",
+    "title": "Log in and reach the authenticated dashboard",
+    "description": "This test verifies that a registered user can log in and land on the dashboard with access to authenticated content.",
+    "category": "User Login",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authenticated dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify parking discovery content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Register a new account successfully",
+    "description": "This test verifies that a new driver can create an account and receive confirmation that registration succeeded.",
+    "category": "User Registration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a valid name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with a valid email address"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with a valid password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an account creation confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user can proceed as an authenticated user"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Allow admin access to the admin dashboard",
+    "description": "A logged-in admin can open the admin area and see the admin dashboard content.",
+    "category": "Admin Access Control",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for an admin account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin/"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the admin dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify admin management sections are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Start a booking for an available slot with a vehicle number",
+    "description": "This test verifies that a logged-in driver can select an available slot, enter a vehicle number, and confirm a booking.",
+    "category": "Parking Discovery and Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click an available parking slot from the dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the vehicle number field with a valid vehicle number"
+      },
+      {
+        "type": "action",
+        "description": "Submit the booking form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a booking confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the booking appears as active"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Book an available parking slot",
+    "description": "A logged-in driver can reserve an available parking slot with a vehicle number and see the booking confirmed.",
+    "category": "Book Parking Slot",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a driver account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Select an available parking slot"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the vehicle number field with a valid vehicle number"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a booking confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the booking appears as active"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "View current bookings, end an active booking, and open the receipt",
+    "description": "This test verifies that a user can review bookings, end an active booking, and see the generated receipt afterward.",
+    "category": "Parking Discovery and Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the bookings page link"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to end an active booking"
+      },
+      {
+        "type": "action",
+        "description": "Open the receipt for the completed booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the receipt is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the booking is shown as completed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Open the admin dashboard and analytics summary",
+    "description": "This verifies that an admin can access the admin home area and see dashboard analytics content.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the admin dashboard link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the admin dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics summary content is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "End an active booking and view the receipt",
+    "description": "A logged-in user can exit an active booking and then review the generated receipt for that completed stay.",
+    "category": "My Bookings and Exit",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /my_bookings"
+      },
+      {
+        "type": "action",
+        "description": "Select an active booking"
+      },
+      {
+        "type": "action",
+        "description": "Exit the booking"
+      },
+      {
+        "type": "action",
+        "description": "Open the receipt for the completed booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a completed booking receipt is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify receipt charges and booking details are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Block regular users from the admin area",
+    "description": "A logged-in non-admin user cannot access the admin dashboard and sees restricted access instead.",
+    "category": "Admin Access Control",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin/"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify admin content is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an access restriction message is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Book a slot from the booking page",
+    "description": "A logged-in driver can open a specific slot booking page, enter a vehicle number, and complete the reservation.",
+    "category": "Book Parking Slot",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a driver account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /book/1"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the vehicle number field with a valid vehicle number"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a booking confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the booking is created successfully"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Prevent a non-admin user from opening admin pages",
+    "description": "This verifies that a regular authenticated user cannot access admin-only pages and is not shown admin content.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the admin area link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify admin content is not displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an access restriction message is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Access the dashboard after signing in",
+    "description": "An authenticated user can reach the dashboard and see parking slots and active booking information.",
+    "category": "Landing and Map Navigation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify parking slots and active bookings are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Add a new parking slot as an admin",
+    "description": "This verifies that an admin can create a parking slot and see it appear in the slot list.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the slot management link"
+      },
+      {
+        "type": "action",
+        "description": "Add a new parking slot"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new slot appears in the slot list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "View parking slots and active bookings on the dashboard",
+    "description": "This test verifies that an authenticated user can open the dashboard and see parking slots along with active booking information.",
+    "category": "Parking Discovery and Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the dashboard link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify parking slots are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify active bookings information is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "View personal bookings list",
+    "description": "A logged-in user can open their bookings page and see their own booking history and active bookings.",
+    "category": "My Bookings and Exit",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /my_bookings"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user's bookings are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify active booking information is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Toggle a parking slot status as an admin",
+    "description": "This verifies that an admin can change a slot's availability status and see the updated state in the list.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the slot management link"
+      },
+      {
+        "type": "action",
+        "description": "Toggle a parking slot status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the slot status changes in the slot list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "View parking availability on the map",
+    "description": "This test verifies that a visitor can open the parking map and see slot availability information.",
+    "category": "Parking Discovery and Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /map"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the parking map is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify slot availability information is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Update profile details and notification preferences",
+    "description": "A logged-in user can change their name, email, and email notification preference and save the updated profile settings.",
+    "category": "User Settings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /settings/"
+      },
+      {
+        "type": "action",
+        "description": "Update the name field with a new valid name"
+      },
+      {
+        "type": "action",
+        "description": "Update the email field with a new valid email"
+      },
+      {
+        "type": "action",
+        "description": "Toggle email notifications"
+      },
+      {
+        "type": "action",
+        "description": "Save the profile changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated profile settings are visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the notification preference is reflected"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "Manage parking slots from the admin area",
+    "description": "An admin can add or toggle a parking slot and see the updated slot list in the management view.",
+    "category": "Admin Slot Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for an admin account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin/slots"
+      },
+      {
+        "type": "action",
+        "description": "Add a new parking slot or toggle an existing slot"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated slot list is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the slot status change is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "View all bookings in the admin booking list",
+    "description": "This verifies that an admin can open the bookings page and review the full booking list.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the all bookings link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the all bookings view is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Change password from settings",
+    "description": "A logged-in user can change their password from settings and see a successful password update confirmation.",
+    "category": "User Settings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /settings/"
+      },
+      {
+        "type": "action",
+        "description": "Enter the current password"
+      },
+      {
+        "type": "action",
+        "description": "Enter a new password"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the new password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the password change"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a password update confirmation is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "Review all bookings as admin",
+    "description": "An admin can open the bookings management page and see the complete booking list.",
+    "category": "Admin Analytics and Bookings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for an admin account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin/bookings"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all bookings are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify booking management information is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC023",
+    "title": "View a receipt directly after booking completion",
+    "description": "A logged-in user can open a completed booking receipt page and see the booking summary and charges.",
+    "category": "My Bookings and Exit",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /receipt/1"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a receipt page is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify booking summary and charges are visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC024",
+    "title": "Open the admin analytics page",
+    "description": "This verifies that an admin can navigate to the analytics view and see performance metrics.",
+    "category": "Admin Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the analytics link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics metrics are displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC025",
+    "title": "Review admin analytics",
+    "description": "An admin can open the analytics view and see parking activity summaries.",
+    "category": "Admin Analytics and Bookings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for an admin account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin/analytics"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics content is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify parking activity summaries are visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC026",
+    "title": "Update parking system settings",
+    "description": "A logged-in user can modify parking system settings from the settings page and save the changes successfully.",
+    "category": "User Settings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /settings/"
+      },
+      {
+        "type": "action",
+        "description": "Update a system setting with a valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the system settings"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated system settings are visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a save confirmation is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC027",
+    "title": "Optionally scan a plate during booking",
+    "description": "A logged-in driver can use the optional plate scan control during booking and still complete the reservation successfully.",
+    "category": "Book Parking Slot",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a driver account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /book/1"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the vehicle number field with a valid vehicle number"
+      },
+      {
+        "type": "action",
+        "description": "Click the plate scan control"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a booking confirmation is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC028",
+    "title": "Open the parking map from the landing page",
+    "description": "A visitor can navigate from the landing page to the parking map and see slot availability information.",
+    "category": "Landing and Map Navigation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the parking map"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the parking map is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify parking slot availability information is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC029",
+    "title": "Prevent access to the dashboard before login",
+    "description": "This test verifies that an unauthenticated visitor cannot access protected dashboard content and is routed to authenticate instead.",
+    "category": "Parking Discovery and Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the login or registration prompt is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify protected dashboard content is not visible"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC030",
+    "title": "Keep booking confirmation hidden until required details are provided",
+    "description": "A logged-in driver cannot complete booking submission until the vehicle number has been entered, and the form remains on the booking page.",
+    "category": "Book Parking Slot",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a driver account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /book/1"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the booking"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a booking confirmation is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the booking form remains available"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC031",
+    "title": "Show invalid login feedback",
+    "description": "This test verifies that incorrect login credentials are rejected and an invalid credentials message is shown.",
+    "category": "User Login",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with a valid email address"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with an incorrect password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an invalid credentials message is visible"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC032",
+    "title": "Show password validation when confirmation does not match",
+    "description": "A logged-in user sees a validation error and the password is not changed when the new password confirmation does not match.",
+    "category": "User Settings",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the login credentials for a registered user account"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /settings/"
+      },
+      {
+        "type": "action",
+        "description": "Enter the current password"
+      },
+      {
+        "type": "action",
+        "description": "Enter a new password"
+      },
+      {
+        "type": "action",
+        "description": "Enter a different confirmation password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the password change"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a password validation error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the password update is not confirmed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC033",
+    "title": "Show validation feedback for invalid registration",
+    "description": "This test verifies that invalid registration input is rejected and validation feedback is shown to the user.",
+    "category": "User Registration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form without entering required details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration validation feedback is visible"
+      }
+    ],
+    "priority": "Low"
+  }
+]

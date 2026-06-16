@@ -71,10 +71,49 @@
             <span class="total-amount">₹{{ '%.2f'|format(booking['total_cost']) }}</span>
         </div>
 
-        {% if qr %}
-        <div class="receipt-qr" style="text-align:center;margin:1.25rem 0;">
-            <img src="{{ qr }}" alt="Receipt QR" width="140" height="140" style="border-radius:8px;background:#fff;padding:6px;">
-            <div><small class="text-muted">Scan to verify this receipt</small></div>
+        {% if payment %}
+        <div class="payment-box" style="margin:1.25rem 0;text-align:center;">
+            {% if payment.status == 'paid' %}
+                <div class="badge badge-available" style="font-size:.85rem;padding:.5rem 1rem;">
+                    <i class="fas fa-circle-check"></i> Paid · {{ payment.payment_ref or payment.order_id }}
+                </div>
+            {% else %}
+                {% if upi_qr %}
+                <div class="upi-pay" style="margin-bottom:1.1rem;">
+                    <p style="font-weight:600;margin-bottom:.6rem;"><i class="fas fa-mobile-screen-button"></i> Scan to pay ₹{{ '%.2f'|format(payment.amount) }} with any UPI app</p>
+                    <a href="{{ upi_uri }}">
+                        <img src="{{ upi_qr }}" alt="UPI payment QR" width="190" height="190" style="border-radius:10px;background:#fff;padding:8px;">
+                    </a>
+                    <div><small class="text-muted">GPay · PhonePe · Paytm · any UPI app · tap on mobile to open</small></div>
+                </div>
+                {% endif %}
+            {% if pay_provider == 'razorpay' %}
+                <button id="rzpPay" class="btn btn-primary btn-full">
+                    <i class="fas fa-credit-card"></i> Pay ₹{{ '%.2f'|format(payment.amount) }}
+                </button>
+                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                <script>
+                  document.getElementById('rzpPay').onclick = function () {
+                    new window.Razorpay({
+                      key: "{{ pay_key }}",
+                      amount: {{ (payment.amount * 100)|int }},
+                      currency: "{{ payment.currency }}",
+                      name: "SmartPark ITS",
+                      description: "Parking fee · booking #{{ '%06d'|format(booking['id']) }}",
+                      order_id: "{{ payment.order_id }}",
+                      theme: { color: "#7b61ff" }
+                    }).open();
+                  };
+                </script>
+            {% else %}
+                <form method="POST" action="{{ url_for('payments.mock_confirm', order_id=payment.order_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-credit-card"></i> Pay ₹{{ '%.2f'|format(payment.amount) }} (Demo)
+                    </button>
+                </form>
+            {% endif %}
+            {% endif %}
         </div>
         {% endif %}
 

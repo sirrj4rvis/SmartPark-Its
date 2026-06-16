@@ -58,6 +58,12 @@ class BookingStatus(_StrEnum):
     cancelled = "cancelled"
 
 
+class PaymentStatus(_StrEnum):
+    created = "created"
+    paid = "paid"
+    failed = "failed"
+
+
 class User(db.Model):
     __tablename__ = "users"
 
@@ -68,6 +74,7 @@ class User(db.Model):
     role = db.Column(db.Enum(Role), nullable=False, default=Role.user)
     failed_logins = db.Column(db.Integer, nullable=False, default=0)
     locked_until = db.Column(db.DateTime(timezone=True), nullable=True)
+    email_notifications = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
     bookings = db.relationship("Booking", back_populates="user", lazy="dynamic")
@@ -90,12 +97,39 @@ class User(db.Model):
         return {"id": self.id, "name": self.name, "email": self.email, "role": self.role.value}
 
 
+class ParkingLot(db.Model):
+    """A physical parking location with geo-coordinates (multi-lot support)."""
+    __tablename__ = "parking_lots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(255), nullable=False, default="")
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    slots = db.relationship("ParkingSlot", back_populates="lot", lazy="dynamic")
+
+    def availability(self):
+        avail = self.slots.filter_by(status=SlotStatus.available).count()
+        return {"total": self.slots.count(), "available": avail}
+
+    def to_dict(self):
+        a = self.availability()
+        return {
+            "id": self.id, "name": self.name, "address": self.address,
+            "latitude": self.latitude, "longitude": self.longitude,
+            "total": a["total"], "available": a["available"],
+        }
+
+
 class ParkingSlot(db.Model):
     __tablename__ = "parking_slots"
 
     id = db.Column(db.Integer, primary_key=True)
     slot_number = db.Column(db.String(16), unique=True, nullable=False, index=True)
     location = db.Column(db.String(120), nullable=False)
+    lot_id = db.Column(db.Integer, db.ForeignKey("parking_lots.id"), nullable=True, index=True)
     status = db.Column(db.Enum(SlotStatus), nullable=False, default=SlotStatus.available, index=True)
     vehicle_type = db.Column(db.Enum(VehicleType), nullable=False, default=VehicleType.car)
     base_rate = db.Column(db.Float, nullable=False, default=30.0)
@@ -104,6 +138,7 @@ class ParkingSlot(db.Model):
     reserved_until = db.Column(db.DateTime(timezone=True), nullable=True)
 
     bookings = db.relationship("Booking", back_populates="slot", lazy="dynamic")
+    lot = db.relationship("ParkingLot", back_populates="slots")
 
     @property
     def current_rate(self) -> float:
@@ -119,6 +154,7 @@ class ParkingSlot(db.Model):
             "id": self.id,
             "slot_number": self.slot_number,
             "location": self.location,
+            "lot_id": self.lot_id,
             "status": self.status.value,
             "vehicle_type": self.vehicle_type.value,
             "base_rate": self.base_rate,
@@ -145,6 +181,12 @@ class Booking(db.Model):
     slot = db.relationship("ParkingSlot", back_populates="bookings")
 
     # --- Flat accessors so templates can use booking.slot_number etc. ---
+    @property
+    def start_iso(self):
+        """UTC ISO-8601 (with offset) so the browser computes elapsed time
+        correctly regardless of the viewer's timezone."""
+        return as_utc(self.start_time).isoformat() if self.start_time else ""
+
     @property
     def slot_number(self):
         return self.slot.slot_number if self.slot else None
@@ -203,3 +245,45 @@ class Booking(db.Model):
             "total_cost": self.total_cost,
             "status": self.status.value,
         }
+
+
+class Payment(db.Model):
+    """A payment for a completed booking (Razorpay order, or mock in dev)."""
+    __tablename__ = "payments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey("bookings.id"), nullable=False, unique=True, index=True)
+    provider = db.Column(db.String(32), nullable=False, default="mock")
+    order_id = db.Column(db.String(80), nullable=False, unique=True, index=True)
+    payment_ref = db.Column(db.String(80), nullable=True)  # provider payment id
+    amount = db.Column(db.Float, nullable=False)           # major units (₹)
+    currency = db.Column(db.String(8), nullable=False, default="INR")
+    status = db.Column(db.Enum(PaymentStatus), nullable=False, default=PaymentStatus.created, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    booking = db.relationship("Booking", backref=db.backref("payment", uselist=False))
+
+    def to_dict(self):
+        return {
+            "id": self.id, "booking_id": self.booking_id, "provider": self.provider,
+            "order_id": self.order_id, "amount": self.amount, "currency": self.currency,
+            "status": self.status.value,
+        }
+
+
+class WebhookEvent(db.Model):
+    """Idempotency ledger — each provider event id is processed at most once."""
+    __tablename__ = "webhook_events"
+
+    event_id = db.Column(db.String(120), primary_key=True)
+    provider = db.Column(db.String(32), nullable=False)
+    received_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class AppSetting(db.Model):
+    """Runtime-editable key/value config (admin Settings page overrides env defaults)."""
+    __tablename__ = "app_settings"
+
+    key = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.String(255), nullable=False, default="")
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)

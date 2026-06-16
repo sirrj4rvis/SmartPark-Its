@@ -20,11 +20,20 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from sqlalchemy.exc import IntegrityError
 
 from ...extensions import csrf, db, limiter
 from ...models import Booking, Role, User
 from ...security import authenticate
-from ...services import analytics_service, booking_service, forecast_service, slot_service
+from ...validators import is_valid_email
+from ...services import (
+    analytics_service,
+    anpr_service,
+    booking_service,
+    forecast_service,
+    geo_service,
+    slot_service,
+)
 from ...realtime import broadcast_slots
 
 api_v1_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
@@ -36,6 +45,29 @@ csrf.exempt(api_v1_bp)
 
 def _admin_only():
     return get_jwt().get("role") == Role.admin.value
+
+
+@api_v1_bp.post("/auth/register")
+@limiter.limit("20 per hour")
+def api_register():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    if not name or not email or len(password) < 8:
+        return jsonify({"error": "name, email and a password (min 8 chars) are required"}), 400
+    if not is_valid_email(email):
+        return jsonify({"error": "a valid email address is required"}), 400
+    user = User(name=name, email=email, role=Role.user)
+    user.set_password(password)
+    db.session.add(user)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "email already registered"}), 409
+    token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.value})
+    return jsonify({"access_token": token, "user": user.to_dict()}), 201
 
 
 @api_v1_bp.post("/auth/login")
@@ -58,6 +90,22 @@ def slots():
 def recommend():
     vt = request.args.get("vehicle_type")
     return jsonify({"recommendations": forecast_service.recommend_slots(vt)})
+
+
+@api_v1_bp.get("/lots")
+def lots():
+    return jsonify({"lots": [lot.to_dict() for lot in geo_service.list_lots()]})
+
+
+@api_v1_bp.get("/lots/nearest")
+def nearest_lots():
+    try:
+        lat = float(request.args["lat"])
+        lon = float(request.args["lng"])
+    except (KeyError, ValueError):
+        return jsonify({"error": "lat and lng query params are required"}), 400
+    limit = request.args.get("limit", 5, type=int)
+    return jsonify({"lots": geo_service.nearest_lots(lat, lon, limit)})
 
 
 @api_v1_bp.post("/bookings")
@@ -102,6 +150,22 @@ def forecast():
     return jsonify(forecast_service.next_24h_forecast())
 
 
+@api_v1_bp.post("/anpr")
+@limiter.limit("30 per minute")
+def anpr():
+    """Recognize a number plate from an uploaded image (multipart 'image')."""
+    file = request.files.get("image")
+    if not file:
+        return jsonify({"error": "an 'image' file is required"}), 400
+    data = file.read()
+    if not data:
+        return jsonify({"error": "empty image"}), 400
+    result = anpr_service.recognize_plate(data)
+    if not result.get("ocr_available"):
+        return jsonify({**result, "message": "OCR engine not installed on server"}), 503
+    return jsonify(result)
+
+
 @api_v1_bp.get("/analytics")
 @jwt_required()
 def analytics():
@@ -141,10 +205,18 @@ def _openapi_spec():
                  "description": "Real-time smart parking platform API."},
         "components": {"securitySchemes": bearer},
         "paths": {
+            "/api/v1/auth/register": {"post": path("Register a new account, returns a JWT",
+                body={"name": {"type": "string"}, "email": {"type": "string"}, "password": {"type": "string"}})},
             "/api/v1/auth/login": {"post": path("Obtain a JWT",
                 body={"email": {"type": "string"}, "password": {"type": "string"}})},
             "/api/v1/slots": {"get": path("List slot availability")},
             "/api/v1/slots/recommend": {"get": path("Smart slot recommendations")},
+            "/api/v1/lots": {"get": path("List parking lots with coordinates & availability")},
+            "/api/v1/lots/nearest": {"get": path("Nearest lots to a point",
+                params=[
+                    {"name": "lat", "in": "query", "required": True, "schema": {"type": "number"}},
+                    {"name": "lng", "in": "query", "required": True, "schema": {"type": "number"}},
+                ])},
             "/api/v1/bookings": {
                 "get": path("List my bookings", secured=True),
                 "post": path("Create a booking", secured=True,
@@ -153,6 +225,7 @@ def _openapi_spec():
             "/api/v1/bookings/{id}/exit": {"post": path("Exit a booking", secured=True,
                 params=[{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}])},
             "/api/v1/forecast": {"get": path("24h occupancy forecast")},
+            "/api/v1/anpr": {"post": path("Recognize a number plate from an uploaded image (multipart 'image')")},
             "/api/v1/analytics": {"get": path("Admin analytics", secured=True)},
         },
     }

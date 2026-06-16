@@ -32,10 +32,20 @@ def create_app(config_object=None):
     csrf.init_app(app)
     cache.init_app(app)
     jwt.init_app(app)
-    if app.config.get("TESTING") and not app.config.get("RATELIMIT_ENABLED", True):
-        limiter.enabled = False
+    limiter.enabled = app.config.get("RATELIMIT_ENABLED", True)
     limiter.init_app(app)
     socketio.init_app(app, message_queue=app.config.get("SOCKETIO_MESSAGE_QUEUE"))
+
+    # Serve /static/ via WhiteNoise so static assets don't tie up request
+    # workers, with long-lived cache headers. Outermost layer for HTTP.
+    try:
+        from whitenoise import WhiteNoise
+
+        app.wsgi_app = WhiteNoise(
+            app.wsgi_app, root=app.static_folder, prefix="static/", max_age=2592000
+        )
+    except ImportError:  # whitenoise optional in minimal dev installs
+        app.logger.warning("whitenoise not installed; Flask will serve static files")
 
     # --- logging & observability ---
     from .logging_config import configure_logging
@@ -64,6 +74,8 @@ def create_app(config_object=None):
     from .blueprints.admin import admin_bp
     from .blueprints.api import api_v1_bp, docs_bp
     from .blueprints.errors import register_error_handlers
+    from .blueprints.payments import payments_bp, pay_webhook_bp
+    from .blueprints.settings import settings_bp
     from .legacy_api import legacy_bp
 
     app.register_blueprint(public_bp)
@@ -72,6 +84,9 @@ def create_app(config_object=None):
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_v1_bp)
     app.register_blueprint(docs_bp)
+    app.register_blueprint(payments_bp)
+    app.register_blueprint(pay_webhook_bp)
+    app.register_blueprint(settings_bp)
     app.register_blueprint(legacy_bp)
     register_error_handlers(app)
 

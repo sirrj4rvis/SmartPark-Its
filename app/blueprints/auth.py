@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from ..extensions import db, limiter
 from ..models import Role, User
 from ..security import authenticate, establish_session
+from ..validators import is_valid_email
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -19,6 +20,9 @@ def register():
 
         if not name or not email or not password:
             flash("All fields are required.", "danger")
+            return redirect(url_for("auth.register"))
+        if not is_valid_email(email):
+            flash("Please enter a valid email address.", "danger")
             return redirect(url_for("auth.register"))
         if len(password) < 8:
             flash("Password must be at least 8 characters.", "danger")

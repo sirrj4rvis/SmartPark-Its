@@ -9,6 +9,10 @@ so a fresh Postgres/SQLite database works out of the box.
 """
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()  # load local .env (gitignored) before config is read
+
 from app import create_app
 from app.extensions import socketio
 

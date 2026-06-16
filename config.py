@@ -37,9 +37,12 @@ class BaseConfig:
         "sqlite:///" + os.path.join(os.path.dirname(__file__), "database.db")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # SQLite-safe defaults (these args are accepted by every pool class, so the
+    # dev/test SQLite engines keep working). Production layers on real pool
+    # sizing in ProductionConfig, where the backend is guaranteed to be Postgres.
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
-        "pool_recycle": 280,
+        "pool_recycle": int(os.environ.get("DB_POOL_RECYCLE", 280)),
     }
 
     # --- Redis (cache, rate-limit, socket.io message queue, celery broker) ---
@@ -57,7 +60,8 @@ class BaseConfig:
     # --- Security / auth hardening ---
     LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", 5))
     LOGIN_LOCKOUT_MINUTES = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", 15))
-    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "200 per minute")
+    RATELIMIT_ENABLED = _bool("RATELIMIT_ENABLED", True)
+    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "300 per minute")
     RATELIMIT_STORAGE_URI = os.environ.get("REDIS_URL", "memory://")
     WTF_CSRF_TIME_LIMIT = None  # tie CSRF token to the session lifetime
 
@@ -69,6 +73,15 @@ class BaseConfig:
     PRICING_SURGE_ENABLED = _bool("PRICING_SURGE_ENABLED", True)
     PRICING_SURGE_MAX = float(os.environ.get("PRICING_SURGE_MAX", 2.0))
     PRICING_SURGE_THRESHOLD = float(os.environ.get("PRICING_SURGE_THRESHOLD", 0.6))
+
+    # --- Payments (Razorpay) ---
+    RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID")
+    RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
+    RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "whsec_dev_secret")
+
+    # --- UPI direct payment (free, no gateway account; scan with any UPI app) ---
+    UPI_VPA = os.environ.get("UPI_VPA", "")              # e.g. yourname@okhdfcbank
+    UPI_PAYEE_NAME = os.environ.get("UPI_PAYEE_NAME", "SmartPark ITS")
 
     # --- Observability ---
     SENTRY_DSN = os.environ.get("SENTRY_DSN")
@@ -109,10 +122,31 @@ class ProductionConfig(BaseConfig):
     ENV_NAME = "production"
     SESSION_COOKIE_SECURE = _bool("SESSION_COOKIE_SECURE", True)
 
+    # Real connection pool for concurrent load. Keep
+    # (pool_size + max_overflow) * web/worker processes under Postgres
+    # max_connections; front Postgres with PgBouncer at high scale.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": int(os.environ.get("DB_POOL_SIZE", 10)),
+        "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", 20)),
+        "pool_timeout": int(os.environ.get("DB_POOL_TIMEOUT", 30)),
+        "pool_pre_ping": True,
+        "pool_recycle": int(os.environ.get("DB_POOL_RECYCLE", 280)),
+    }
+
     def __init__(self):
         # Fail fast: never run prod with the insecure default secret.
         if self.SECRET_KEY.startswith("dev-only-insecure-key-change-me"):
             raise RuntimeError("SECRET_KEY must be set in production")
+        # Fail fast: refuse to silently fall back to a local SQLite file in
+        # production — that loses all data on every container restart.
+        if not os.environ.get("DATABASE_URL"):
+            raise RuntimeError("DATABASE_URL is required in production")
+        if self.SQLALCHEMY_DATABASE_URI.startswith("sqlite"):
+            raise RuntimeError("Refusing to run production on SQLite — set a Postgres DATABASE_URL")
+        # Redis backs cache, rate-limit storage, the Socket.IO message queue and
+        # the Celery broker. Without it, cross-worker broadcasts silently break.
+        if not os.environ.get("REDIS_URL"):
+            raise RuntimeError("REDIS_URL is required in production")
 
 
 _CONFIGS = {

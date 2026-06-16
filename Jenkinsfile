@@ -67,7 +67,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t sirrj4rvis/smart-parking .'
+                // Tag both an immutable build number and :latest so deploys are
+                // traceable and rollbacks are possible.
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t %DOCKER_IMAGE%:%BUILD_NUMBER% -t %DOCKER_IMAGE%:latest .'
             }
         }
 
@@ -82,7 +84,8 @@ pipeline {
 
             bat '''
             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% -p %DOCKER_PASS%
-            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push sirrj4rvis/smart-parking
+            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %DOCKER_IMAGE%:%BUILD_NUMBER%
+            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %DOCKER_IMAGE%:latest
             '''
         }
     }

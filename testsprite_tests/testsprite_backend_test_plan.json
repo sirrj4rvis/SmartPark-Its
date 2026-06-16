@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "post register user with valid data",
+    "description": "Test the user registration endpoint by submitting valid name, email, and password data and verify successful account creation."
+  },
+  {
+    "id": "TC002",
+    "title": "post register user with invalid data",
+    "description": "Test the user registration endpoint by submitting invalid or incomplete registration data and verify appropriate validation error messages are returned."
+  },
+  {
+    "id": "TC003",
+    "title": "post login user with correct credentials",
+    "description": "Test the user login endpoint by submitting valid email and password and verify successful authentication and access to the user dashboard."
+  },
+  {
+    "id": "TC004",
+    "title": "post login user with incorrect credentials",
+    "description": "Test the user login endpoint by submitting invalid email or password and verify that an invalid credentials error message is returned."
+  },
+  {
+    "id": "TC005",
+    "title": "post book parking slot with valid vehicle number",
+    "description": "Test booking a specific parking slot by submitting a valid vehicle number and confirm the booking is successful and reflected in the user bookings."
+  },
+  {
+    "id": "TC006",
+    "title": "post exit active booking and view receipt",
+    "description": "Test ending an active booking by submitting the booking ID to the exit endpoint and verify the booking is ended and the receipt details are correctly displayed."
+  },
+  {
+    "id": "TC007",
+    "title": "post update user profile settings",
+    "description": "Test updating user profile information such as name, email, and notification preferences and verify the changes are saved and reflected in the user settings."
+  },
+  {
+    "id": "TC008",
+    "title": "post change user password with valid data",
+    "description": "Test changing the user password by submitting current password, new password, and confirmation and verify the password is updated successfully."
+  },
+  {
+    "id": "TC009",
+    "title": "post admin add new parking slot",
+    "description": "Test the admin endpoint to add a new parking slot and verify the slot appears in the slot list and is available for booking."
+  },
+  {
+    "id": "TC010",
+    "title": "post admin toggle parking slot status",
+    "description": "Test toggling the status of a parking slot via the admin endpoint and verify the slot status changes accordingly in the system."
+  }
+]

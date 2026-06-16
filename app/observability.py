@@ -71,13 +71,32 @@ def init_observability(app):
 def healthz():
     checks = {"app": "ok"}
     status = 200
+
+    # Postgres is hard-required: failure removes the instance from the LB.
     try:
         db.session.execute(text("SELECT 1"))
         checks["db"] = "ok"
     except Exception as exc:
         checks["db"] = f"error: {exc}"
         status = 503
-    return jsonify({"status": "ok" if status == 200 else "degraded", "checks": checks}), status
+
+    # Redis backs cache / rate-limit / Socket.IO queue. Report it so monitoring
+    # sees an outage, but don't 503 on it — a brief Redis blip shouldn't yank
+    # the entire fleet out of rotation at once (the app still serves DB reads).
+    redis_url = current_app.config.get("REDIS_URL")
+    if redis_url and redis_url.startswith("redis"):
+        try:
+            import redis as _redis
+
+            _redis.from_url(redis_url, socket_connect_timeout=1, socket_timeout=1).ping()
+            checks["redis"] = "ok"
+        except Exception as exc:
+            checks["redis"] = f"error: {exc}"
+    else:
+        checks["redis"] = "n/a"
+
+    healthy = status == 200 and not str(checks.get("redis", "")).startswith("error")
+    return jsonify({"status": "ok" if healthy else "degraded", "checks": checks}), status
 
 
 @ops_bp.route("/metrics")
