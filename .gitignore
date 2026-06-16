@@ -34,5 +34,5 @@ test-results.xml
 # Load test reports
 loadtest/report*
 
-# TestSprite scratch (contains the API key in config.json) — never commit
-testsprite_tests/tmp/
+# TestSprite — auto-generated test scripts/reports + scratch (API key in tmp/). Not part of the repo.
+testsprite_tests/

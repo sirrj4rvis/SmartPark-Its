@@ -18,12 +18,9 @@ def test_surge_is_monotonic(app):
     assert b >= a >= 1.0
 
 
-def test_reprice_updates_slot_rates(app, make_user, first_slot, db):
-    from app.services import booking_service
-
+def test_reprice_updates_slot_rates(app, first_slot, db):
     base = first_slot.base_rate
-    user = make_user()
-    # Book several slots to push occupancy up, triggering surge.
+    # Occupy several slots directly to push occupancy up, triggering surge.
     from app.models import ParkingSlot
 
     slots = db.session.query(ParkingSlot).all()

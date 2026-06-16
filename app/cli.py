@@ -5,7 +5,6 @@ cli.py — Flask CLI commands.
   flask create-admin    -> create/update an admin account
 """
 import click
-from flask import current_app
 
 from .extensions import db
 from .models import ParkingLot, ParkingSlot, Role, User, VehicleType
