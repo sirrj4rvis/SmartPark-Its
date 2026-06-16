@@ -146,6 +146,12 @@ class Booking(db.Model):
 
     # --- Flat accessors so templates can use booking.slot_number etc. ---
     @property
+    def start_iso(self):
+        """UTC ISO-8601 (with offset) so the browser computes elapsed time
+        correctly regardless of the viewer's timezone."""
+        return as_utc(self.start_time).isoformat() if self.start_time else ""
+
+    @property
     def slot_number(self):
         return self.slot.slot_number if self.slot else None
 

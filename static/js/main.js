@@ -29,6 +29,18 @@ function updateTimer() {
   setInterval(tick, 1000);
 }
 
+/* ---- Render the "Started" timestamp in the viewer's local timezone ---- */
+function formatStartedAt() {
+  const el = document.getElementById('startedAt');
+  if (!el || !el.dataset.start) return;
+  const d = new Date(el.dataset.start);
+  if (!isNaN(d)) {
+    el.textContent = d.toLocaleString(undefined, {
+      dateStyle: 'medium', timeStyle: 'short'
+    });
+  }
+}
+
 /* ---- Slot Filtering by Vehicle Type ---- */
 function filterSlots(type, btn) {
   // Update active tab
@@ -173,6 +185,7 @@ function animateSlots() {
 /* ---- Init everything on DOM ready ---- */
 document.addEventListener('DOMContentLoaded', () => {
   updateTimer();
+  formatStartedAt();
   startRealtime();
   initHamburger();
   initFlashDismiss();
