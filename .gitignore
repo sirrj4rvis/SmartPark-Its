@@ -30,3 +30,6 @@ Thumbs.db
 # Runtime logs
 server.log
 test-results.xml
+
+# Load test reports
+loadtest/report*

@@ -1,0 +1,30 @@
+groups:
+  - name: smartpark-slos
+    rules:
+      - alert: SmartParkTargetDown
+        expr: up{job="smartpark-web"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "SmartPark web target is down"
+          description: "Prometheus cannot scrape {{ $labels.instance }} for 1m."
+
+      - alert: SmartParkHighErrorRate
+        expr: |
+          sum(rate(smartpark_http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(smartpark_http_requests_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "5xx error rate above 5%"
+          description: "Server error ratio has exceeded 5% for 5 minutes."
+
+      - alert: SmartParkHighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(smartpark_http_request_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 latency above 1s"
+          description: "95th percentile request latency has exceeded 1s for 10 minutes."

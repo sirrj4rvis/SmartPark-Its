@@ -57,7 +57,8 @@ class BaseConfig:
     # --- Security / auth hardening ---
     LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", 5))
     LOGIN_LOCKOUT_MINUTES = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", 15))
-    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "200 per minute")
+    RATELIMIT_ENABLED = _bool("RATELIMIT_ENABLED", True)
+    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "300 per minute")
     RATELIMIT_STORAGE_URI = os.environ.get("REDIS_URL", "memory://")
     WTF_CSRF_TIME_LIMIT = None  # tie CSRF token to the session lifetime
 

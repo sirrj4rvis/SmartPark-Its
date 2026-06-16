@@ -32,8 +32,7 @@ def create_app(config_object=None):
     csrf.init_app(app)
     cache.init_app(app)
     jwt.init_app(app)
-    if app.config.get("TESTING") and not app.config.get("RATELIMIT_ENABLED", True):
-        limiter.enabled = False
+    limiter.enabled = app.config.get("RATELIMIT_ENABLED", True)
     limiter.init_app(app)
     socketio.init_app(app, message_queue=app.config.get("SOCKETIO_MESSAGE_QUEUE"))
 

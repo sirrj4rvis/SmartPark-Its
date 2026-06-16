@@ -7,6 +7,26 @@ def _token(client, email="admin@parking.com", password="admin123"):
     return r.get_json()["access_token"]
 
 
+def test_api_register_returns_token(client, db):
+    r = client.post("/api/v1/auth/register",
+                    json={"name": "Api User", "email": "apinew@test.com", "password": "Passw0rd1"})
+    assert r.status_code == 201
+    assert r.get_json()["access_token"]
+
+
+def test_api_register_rejects_short_password(client):
+    r = client.post("/api/v1/auth/register",
+                    json={"name": "X", "email": "x@test.com", "password": "short"})
+    assert r.status_code == 400
+
+
+def test_api_register_duplicate_email(client, make_user):
+    make_user(email="dupe@test.com")
+    r = client.post("/api/v1/auth/register",
+                    json={"name": "Dupe", "email": "dupe@test.com", "password": "Passw0rd1"})
+    assert r.status_code == 409
+
+
 def test_public_slots_endpoint(client):
     r = client.get("/api/v1/slots")
     assert r.status_code == 200

@@ -30,6 +30,8 @@ sentry-sdk[flask]>=2.10.0
 # --- Features ---
 qrcode[pil]>=7.4.2
 
-# --- Testing ---
+# --- Testing / load ---
 pytest>=8.3.2
 pytest-cov>=5.0.0
+testcontainers[postgres]>=4.0.0
+locust>=2.40.0

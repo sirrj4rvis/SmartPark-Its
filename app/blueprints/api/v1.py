@@ -20,6 +20,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from sqlalchemy.exc import IntegrityError
 
 from ...extensions import csrf, db, limiter
 from ...models import Booking, Role, User
@@ -36,6 +37,27 @@ csrf.exempt(api_v1_bp)
 
 def _admin_only():
     return get_jwt().get("role") == Role.admin.value
+
+
+@api_v1_bp.post("/auth/register")
+@limiter.limit("20 per hour")
+def api_register():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    if not name or not email or len(password) < 8:
+        return jsonify({"error": "name, email and a password (min 8 chars) are required"}), 400
+    user = User(name=name, email=email, role=Role.user)
+    user.set_password(password)
+    db.session.add(user)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "email already registered"}), 409
+    token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.value})
+    return jsonify({"access_token": token, "user": user.to_dict()}), 201
 
 
 @api_v1_bp.post("/auth/login")
@@ -141,6 +163,8 @@ def _openapi_spec():
                  "description": "Real-time smart parking platform API."},
         "components": {"securitySchemes": bearer},
         "paths": {
+            "/api/v1/auth/register": {"post": path("Register a new account, returns a JWT",
+                body={"name": {"type": "string"}, "email": {"type": "string"}, "password": {"type": "string"}})},
             "/api/v1/auth/login": {"post": path("Obtain a JWT",
                 body={"email": {"type": "string"}, "password": {"type": "string"}})},
             "/api/v1/slots": {"get": path("List slot availability")},
