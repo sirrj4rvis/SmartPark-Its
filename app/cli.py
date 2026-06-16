@@ -8,7 +8,14 @@ import click
 from flask import current_app
 
 from .extensions import db
-from .models import ParkingSlot, Role, User, VehicleType
+from .models import ParkingLot, ParkingSlot, Role, User, VehicleType
+
+# Demo lots with real coordinates (Bengaluru). slot_number prefix → lot.
+DEMO_LOTS = [
+    ("A", "MSRIT Campus Parking", "MS Ramaiah Institute of Tech, Bengaluru", 13.0297, 77.5645),
+    ("B", "Orion Mall Parking", "Brigade Gateway, Rajajinagar, Bengaluru", 13.0108, 77.5550),
+    ("C", "MG Road Metro Parking", "MG Road, Bengaluru", 12.9756, 77.6068),
+]
 
 DEMO_SLOTS = [
     ("A1", "Block A - Ground Floor", "car", 30.0),
@@ -35,11 +42,22 @@ def seed_data():
         admin = User(name="Admin User", email="admin@parking.com", role=Role.admin)
         admin.set_password("admin123")
         db.session.add(admin)
+
+    lots_by_prefix = {}
+    if db.session.query(ParkingLot).count() == 0:
+        for prefix, name, address, lat, lng in DEMO_LOTS:
+            lot = ParkingLot(name=name, address=address, latitude=lat, longitude=lng)
+            db.session.add(lot)
+            lots_by_prefix[prefix] = lot
+        db.session.flush()  # assign IDs
+
     if db.session.query(ParkingSlot).count() == 0:
         for number, location, vt, rate in DEMO_SLOTS:
+            lot = lots_by_prefix.get(number[0])
             db.session.add(
                 ParkingSlot(slot_number=number, location=location,
-                            vehicle_type=VehicleType(vt), base_rate=rate)
+                            vehicle_type=VehicleType(vt), base_rate=rate,
+                            lot_id=lot.id if lot else None)
             )
     db.session.commit()
 

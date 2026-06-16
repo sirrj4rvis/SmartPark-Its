@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Find Parking — SmartPark ITS{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  #map { height: 540px; border-radius: var(--r-lg); border: 1px solid var(--border); }
+  .map-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.25rem; }
+  .lot-list { display: flex; flex-direction: column; gap: .75rem; max-height: 540px; overflow-y: auto; }
+  .lot-item { padding: 1rem 1.1rem; border-radius: var(--r); cursor: pointer; transition: all var(--transition); }
+  .lot-item:hover { transform: translateY(-2px); border-color: var(--brand); }
+  .lot-item h4 { font-size: 1rem; }
+  .lot-item .addr { font-size: .8rem; color: var(--text-muted); margin: .2rem 0 .5rem; }
+  .lot-meta { display: flex; gap: .75rem; align-items: center; font-size: .82rem; }
+  .dist-badge { color: var(--cyan); font-weight: 600; }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #0d1320; color: var(--text); }
+  @media (max-width: 860px) { .map-layout { grid-template-columns: 1fr; } #map { height: 380px; } }
+</style>
+
+<section class="dashboard-section">
+  <div class="page-header">
+    <div>
+      <h1><i class="fas fa-map-location-dot"></i> Find Parking Near You</h1>
+      <p>Live availability across all SmartPark lots.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" id="locateBtn"><i class="fas fa-location-crosshairs"></i> Use my location</button>
+    </div>
+  </div>
+
+  <div class="map-layout">
+    <div class="lot-list glass" style="padding:.75rem;" id="lotList"></div>
+    <div id="map"></div>
+  </div>
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  const LOTS = {{ lots|tojson }};
+  const map = L.map('map');
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 20
+  }).addTo(map);
+
+  const markers = {};
+  function colorFor(l) { return l.available === 0 ? '#fb7185' : (l.available <= 2 ? '#fbbf24' : '#34d399'); }
+
+  function markerHtml(l) {
+    return `<div style="background:${colorFor(l)};color:#04121c;font-weight:700;border-radius:10px;
+      width:34px;height:34px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.5)">${l.available}</div>`;
+  }
+
+  const bounds = [];
+  LOTS.forEach(l => {
+    const icon = L.divIcon({ html: markerHtml(l), className: '', iconSize: [34, 34] });
+    const m = L.marker([l.latitude, l.longitude], { icon }).addTo(map);
+    m.bindPopup(`<strong>${l.name}</strong><br><small>${l.address}</small><br>
+      <b style="color:${colorFor(l)}">${l.available}</b> / ${l.total} available`);
+    markers[l.id] = m;
+    bounds.push([l.latitude, l.longitude]);
+  });
+  if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
+  else map.setView([13.02, 77.56], 12);
+
+  function renderList(lots) {
+    const el = document.getElementById('lotList');
+    el.innerHTML = lots.map(l => `
+      <div class="lot-item glass" data-id="${l.id}">
+        <h4>${l.name}</h4>
+        <div class="addr">${l.address}</div>
+        <div class="lot-meta">
+          <span class="badge badge-${l.available === 0 ? 'occupied' : 'available'}">${l.available} / ${l.total} free</span>
+          ${l.distance_km != null ? `<span class="dist-badge"><i class="fas fa-route"></i> ${l.distance_km} km</span>` : ''}
+        </div>
+      </div>`).join('');
+    el.querySelectorAll('.lot-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = +item.dataset.id;
+        const l = LOTS.find(x => x.id === id);
+        map.setView([l.latitude, l.longitude], 15);
+        markers[id].openPopup();
+      });
+    });
+  }
+  renderList(LOTS);
+
+  document.getElementById('locateBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) return alert('Geolocation not supported by your browser.');
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      L.circleMarker([latitude, longitude], { radius: 8, color: '#7b61ff', fillOpacity: .9 })
+        .addTo(map).bindPopup('You are here').openPopup();
+      const r = await fetch(`/api/v1/lots/nearest?lat=${latitude}&lng=${longitude}`);
+      const data = await r.json();
+      renderList(data.lots);
+      if (data.lots[0]) map.setView([data.lots[0].latitude, data.lots[0].longitude], 13);
+    }, () => alert('Could not get your location.'));
+  });
+</script>
+{% endblock %}

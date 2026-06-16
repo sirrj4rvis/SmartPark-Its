@@ -32,6 +32,7 @@
         <!-- Navigation Links -->
         <ul class="nav-links">
             <li><a href="{{ url_for('public.index') }}" class="nav-link">Home</a></li>
+            <li><a href="{{ url_for('public.parking_map') }}" class="nav-link">Find Parking</a></li>
 
             {% if session.get('user_id') %}
                 <!-- Logged-in user links -->

@@ -90,12 +90,39 @@ class User(db.Model):
         return {"id": self.id, "name": self.name, "email": self.email, "role": self.role.value}
 
 
+class ParkingLot(db.Model):
+    """A physical parking location with geo-coordinates (multi-lot support)."""
+    __tablename__ = "parking_lots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(255), nullable=False, default="")
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    slots = db.relationship("ParkingSlot", back_populates="lot", lazy="dynamic")
+
+    def availability(self):
+        avail = self.slots.filter_by(status=SlotStatus.available).count()
+        return {"total": self.slots.count(), "available": avail}
+
+    def to_dict(self):
+        a = self.availability()
+        return {
+            "id": self.id, "name": self.name, "address": self.address,
+            "latitude": self.latitude, "longitude": self.longitude,
+            "total": a["total"], "available": a["available"],
+        }
+
+
 class ParkingSlot(db.Model):
     __tablename__ = "parking_slots"
 
     id = db.Column(db.Integer, primary_key=True)
     slot_number = db.Column(db.String(16), unique=True, nullable=False, index=True)
     location = db.Column(db.String(120), nullable=False)
+    lot_id = db.Column(db.Integer, db.ForeignKey("parking_lots.id"), nullable=True, index=True)
     status = db.Column(db.Enum(SlotStatus), nullable=False, default=SlotStatus.available, index=True)
     vehicle_type = db.Column(db.Enum(VehicleType), nullable=False, default=VehicleType.car)
     base_rate = db.Column(db.Float, nullable=False, default=30.0)
@@ -104,6 +131,7 @@ class ParkingSlot(db.Model):
     reserved_until = db.Column(db.DateTime(timezone=True), nullable=True)
 
     bookings = db.relationship("Booking", back_populates="slot", lazy="dynamic")
+    lot = db.relationship("ParkingLot", back_populates="slots")
 
     @property
     def current_rate(self) -> float:
@@ -119,6 +147,7 @@ class ParkingSlot(db.Model):
             "id": self.id,
             "slot_number": self.slot_number,
             "location": self.location,
+            "lot_id": self.lot_id,
             "status": self.status.value,
             "vehicle_type": self.vehicle_type.value,
             "base_rate": self.base_rate,

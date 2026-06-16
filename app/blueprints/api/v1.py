@@ -25,7 +25,13 @@ from sqlalchemy.exc import IntegrityError
 from ...extensions import csrf, db, limiter
 from ...models import Booking, Role, User
 from ...security import authenticate
-from ...services import analytics_service, booking_service, forecast_service, slot_service
+from ...services import (
+    analytics_service,
+    booking_service,
+    forecast_service,
+    geo_service,
+    slot_service,
+)
 from ...realtime import broadcast_slots
 
 api_v1_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
@@ -80,6 +86,22 @@ def slots():
 def recommend():
     vt = request.args.get("vehicle_type")
     return jsonify({"recommendations": forecast_service.recommend_slots(vt)})
+
+
+@api_v1_bp.get("/lots")
+def lots():
+    return jsonify({"lots": [lot.to_dict() for lot in geo_service.list_lots()]})
+
+
+@api_v1_bp.get("/lots/nearest")
+def nearest_lots():
+    try:
+        lat = float(request.args["lat"])
+        lon = float(request.args["lng"])
+    except (KeyError, ValueError):
+        return jsonify({"error": "lat and lng query params are required"}), 400
+    limit = request.args.get("limit", 5, type=int)
+    return jsonify({"lots": geo_service.nearest_lots(lat, lon, limit)})
 
 
 @api_v1_bp.post("/bookings")
@@ -169,6 +191,12 @@ def _openapi_spec():
                 body={"email": {"type": "string"}, "password": {"type": "string"}})},
             "/api/v1/slots": {"get": path("List slot availability")},
             "/api/v1/slots/recommend": {"get": path("Smart slot recommendations")},
+            "/api/v1/lots": {"get": path("List parking lots with coordinates & availability")},
+            "/api/v1/lots/nearest": {"get": path("Nearest lots to a point",
+                params=[
+                    {"name": "lat", "in": "query", "required": True, "schema": {"type": "number"}},
+                    {"name": "lng", "in": "query", "required": True, "schema": {"type": "number"}},
+                ])},
             "/api/v1/bookings": {
                 "get": path("List my bookings", secured=True),
                 "post": path("Create a booking", secured=True,
