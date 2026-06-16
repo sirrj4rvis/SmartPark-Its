@@ -59,15 +59,15 @@
 
     <!-- Quick Links -->
     <div class="admin-quick-links">
-        <a href="{{ url_for('manage_slots') }}" class="qlink glass">
+        <a href="{{ url_for('admin.manage_slots') }}" class="qlink glass">
             <i class="fas fa-layer-group"></i>
             <span>Manage Slots</span>
         </a>
-        <a href="{{ url_for('all_bookings') }}" class="qlink glass">
+        <a href="{{ url_for('admin.all_bookings') }}" class="qlink glass">
             <i class="fas fa-list-alt"></i>
             <span>All Bookings</span>
         </a>
-        <a href="{{ url_for('dashboard') }}" class="qlink glass">
+        <a href="{{ url_for('user.dashboard') }}" class="qlink glass">
             <i class="fas fa-th-large"></i>
             <span>Slot Grid View</span>
         </a>
@@ -76,7 +76,7 @@
     <!-- Recent Bookings -->
     <div class="admin-section-header">
         <h2>Recent Bookings</h2>
-        <a href="{{ url_for('all_bookings') }}" class="btn btn-outline btn-sm">View All</a>
+        <a href="{{ url_for('admin.all_bookings') }}" class="btn btn-outline btn-sm">View All</a>
     </div>
 
     {% if recent_books %}

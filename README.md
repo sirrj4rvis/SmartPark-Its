@@ -1,19 +1,17 @@
 <div align="center">
 
-# 🅿️ SmartPark — Intelligent Parking Management System
+# 🅿️ SmartPark ITS — Real-Time Smart Parking Platform
 
-### A full-stack, production-deployed **Intelligent Transport System (ITS)** with a complete DevOps pipeline.
-
-*Real-time slot tracking · Automated billing · Role-based dashboards · CI/CD · Containerized · Security-scanned*
-
-<br/>
+### A production-grade **Intelligent Transport System (ITS)** — real-time availability, dynamic pricing, occupancy forecasting, full observability, and a complete CI/CD pipeline.
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?style=for-the-badge&logo=jenkins&logoColor=white)](https://www.jenkins.io/)
-[![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![Flask](https://img.shields.io/badge/Flask-3-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Socket.IO](https://img.shields.io/badge/WebSockets-Socket.IO-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io/)
+[![Celery](https://img.shields.io/badge/Celery-Tasks-37814A?style=for-the-badge&logo=celery&logoColor=white)](https://docs.celeryq.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/tests-pytest%20%E2%9C%93-success?style=for-the-badge)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 </div>
@@ -22,190 +20,161 @@
 
 ## 📖 Overview
 
-**SmartPark** is an end-to-end smart parking solution that digitizes the entire parking lifecycle — from discovering a free slot to receiving an itemized exit receipt. It pairs a clean, dark-mode web experience with a **fully automated DevOps pipeline** (build → scan → containerize → deploy), demonstrating both application engineering and modern delivery practices.
+**SmartPark ITS** is an end-to-end smart-parking platform: drivers discover live slot availability, get **demand-based dynamic pricing**, reserve or book a slot (with a strict concurrency guarantee), and receive a **QR-verifiable digital receipt**. Admins get a **real-time analytics dashboard**, slot management, and full system auditing. The whole thing is observable, tested, containerized, and shipped through CI/CD.
 
-> Built as part of an **Intelligent Transport Systems (ITS)** project to showcase full-stack development, secure authentication, real-time state management, and CI/CD automation.
-
----
-
-## ✨ Highlights
-
-- 🔄 **Real-time slot availability** — live grid auto-refreshes via a JSON API; no page reloads.
-- 🔐 **Secure authentication** — hashed passwords (Werkzeug), session management, and role-based access control (User / Admin).
-- ⏱️ **Live parking timer & automated billing** — duration tracked to the second, cost computed on exit with a transparent rate model.
-- 🧾 **Itemized digital receipts** — entry/exit time, duration, rate, and total cost.
-- 🛠️ **Full admin control panel** — manage slots, monitor revenue, and audit every booking across all users.
-- 🚀 **Production CI/CD** — Jenkins pipeline with code quality, security scanning, containerization, and automated deployment.
+It is intentionally engineered to production standards — not as a CRUD demo, but as something you can defend, end-to-end, in a senior-level system-design conversation.
 
 ---
 
-## 🧩 Tech Stack
+## ✨ Key Capabilities
 
-| Layer | Technologies |
-|-------|--------------|
-| **Frontend** | HTML5, CSS3 (custom dark-mode UI), Vanilla JavaScript, Font Awesome 6, Google Fonts (Inter) |
-| **Backend** | Python 3.11, Flask 3.0 |
-| **Database** | SQLite 3 |
-| **Auth & Security** | Werkzeug password hashing, server-side sessions |
-| **DevOps** | Docker, Jenkins, SonarCloud (static analysis), Trivy (vulnerability scanning), DockerHub, Render |
+| Area | What it does |
+|------|--------------|
+| ⚡ **Real-time** | Slot status pushed to every client over **WebSockets** (Socket.IO + Redis pub/sub), with graceful polling fallback. |
+| 🔒 **Concurrency-safe booking** | Double-booking is **impossible by construction** — a partial unique DB index + row-level locking + transactional writes. |
+| 💸 **Dynamic pricing** | Surge multiplier ramps with live occupancy (configurable threshold & cap). |
+| 🧠 **Occupancy forecasting** | Exponentially-weighted hour-of-week demand model → 24h forecast + cheapest-slot recommendations. |
+| ⏳ **Reservations** | Hold a slot with a TTL; a **Celery beat** job auto-releases expired holds. |
+| 🧾 **QR receipts** | Each completed session yields a scannable, verifiable receipt. |
+| 📊 **Analytics** | Revenue trend, peak-hour histogram, vehicle mix, live occupancy (Chart.js). |
+| 🔭 **Observability** | Structured JSON logs w/ request IDs, Sentry, Prometheus `/metrics`, `/healthz`. |
+| 🔌 **REST API** | Versioned `/api/v1`, JWT-authenticated, self-documenting **Swagger UI**. |
+| 🛡️ **Hardened auth** | Hashing, CSRF, rate limiting, login lockout, secure cookies, 12-factor config. |
+| ✅ **Tested + CI** | pytest unit + integration suite (incl. a concurrency proof), coverage gate in Jenkins. |
 
 ---
 
-## 🏗️ DevOps Pipeline
-
-This project ships through a complete, automated delivery pipeline — not just a local script.
+## 🏛️ Architecture
 
 ```
- ┌──────────┐   ┌───────────────┐   ┌────────────┐   ┌──────────────┐   ┌────────────┐   ┌──────────┐
- │  GitHub  │ → │  SonarCloud   │ → │   Trivy    │ → │ Docker Build │ → │  DockerHub │ → │  Render  │
- │  (push)  │   │ code quality  │   │ vuln scan  │   │  & package   │   │   push     │   │  deploy  │
- └──────────┘   └───────────────┘   └────────────┘   └──────────────┘   └────────────┘   └──────────┘
+                      ┌────────────────────────── Clients ──────────────────────────┐
+                      │   Browser (Jinja + Socket.IO)        REST consumers (JWT)     │
+                      └───────────────┬───────────────────────────────┬──────────────┘
+                                      │ HTTP / WebSocket               │ /api/v1 (JWT)
+                          ┌───────────▼───────────────────────────────▼───────────┐
+                          │                 Flask (app factory)                    │
+                          │  Blueprints: public · auth · user · admin · api · ops  │
+                          │  Extensions: SQLAlchemy · Migrate · WTF/CSRF · Limiter │
+                          │              · Caching · SocketIO · JWT                 │
+                          │  Services:  booking · slot · pricing · forecast · …    │
+                          └───┬───────────────┬───────────────┬──────────────┬─────┘
+                              │               │               │              │
+                       ┌──────▼─────┐  ┌──────▼─────┐  ┌──────▼─────┐  ┌─────▼──────┐
+                       │ PostgreSQL │  │   Redis    │  │  Celery    │  │  Sentry /  │
+                       │ (+Alembic) │  │ cache·pub  │  │ worker+beat│  │ Prometheus │
+                       └────────────┘  └────────────┘  └────────────┘  └────────────┘
 ```
 
-| Stage | Tooling | Purpose |
-|-------|---------|---------|
-| **Code Quality** | SonarCloud | Static analysis, bugs & code smells |
-| **Security Scan** | Trivy | Dependency & filesystem vulnerability scanning |
-| **Containerization** | Docker | Reproducible `python:3.11-slim` image |
-| **Registry** | DockerHub | Versioned image storage |
-| **Deployment** | Render | Zero-touch cloud deployment |
-
-*Pipeline defined in [`Jenkinsfile`](Jenkinsfile) · Container defined in [`Dockerfile`](Dockerfile).*
+**Layout**
+```
+app/
+├── __init__.py            # application factory
+├── extensions.py          # db, migrate, csrf, cache, limiter, socketio
+├── models.py              # ORM: User, ParkingSlot, Booking (+ partial unique indexes)
+├── security.py            # auth, guards, lockout
+├── logging_config.py      # structured JSON logs + request IDs
+├── observability.py       # Sentry, Prometheus, /healthz, /metrics
+├── realtime.py            # Socket.IO events + broadcast
+├── tasks.py               # Celery tasks + beat schedule
+├── cli.py                 # `flask seed`, `flask create-admin`
+├── services/              # booking · slot · pricing · analytics · forecast · notification
+└── blueprints/            # public · auth · user · admin · api/v1 · errors
+wsgi.py · celery_worker.py · config.py · migrations/ · tests/ · docker-compose.yml
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### Option A — Run with Python
-
+### Option A — Full stack with Docker Compose (Postgres + Redis + worker + beat)
 ```bash
-# 1. Clone the repository
-git clone https://github.com/sirrj4rvis/smart-parking.git
-cd smart-parking
+docker compose up --build
+# → http://localhost:5000   (admin: admin@parking.com / admin123)
+```
 
-# 2. Install dependencies
+### Option B — Local (zero infra; SQLite + in-memory cache)
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-# 3. Run the app
-python app.py
+flask --app wsgi seed          # create schema + demo data
+python wsgi.py                 # → http://localhost:5000
 ```
 
-Open **http://127.0.0.1:5000** — the SQLite database is auto-created and seeded with **15 demo slots** on first run.
+> With no `DATABASE_URL`/`REDIS_URL` set, the app falls back to SQLite + in-memory cache so it boots with **zero configuration**. Set them (see [.env.example](.env.example)) to use Postgres/Redis.
 
-### Option B — Run with Docker
+---
+
+## 🔌 API & Real-Time
+
+- **Swagger UI:** `/api/docs` · **OpenAPI spec:** `/api/v1/openapi.json`
+- **Auth:** `POST /api/v1/auth/login` → `{ access_token }`, then `Authorization: Bearer <token>`
 
 ```bash
-docker build -t smart-parking .
-docker run -p 5000:5000 smart-parking
+TOKEN=$(curl -s localhost:5000/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@parking.com","password":"admin123"}' | jq -r .access_token)
+
+curl localhost:5000/api/v1/slots
+curl -X POST localhost:5000/api/v1/bookings -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"slot_id":1,"vehicle_number":"KA01AB1234"}'
+```
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/slots` | GET | – | Live availability + counts |
+| `/api/v1/slots/recommend` | GET | – | Cheapest available slots |
+| `/api/v1/forecast` | GET | – | 24h occupancy forecast |
+| `/api/v1/bookings` | GET/POST | JWT | List / create bookings |
+| `/api/v1/bookings/{id}/exit` | POST | JWT | Exit + receipt |
+| `/api/v1/analytics` | GET | JWT (admin) | KPIs + chart series |
+| `/healthz` · `/metrics` | GET | – | Liveness · Prometheus |
+
+---
+
+## 🔐 The Concurrency Guarantee (interview-ready)
+
+Two drivers tapping "Book A1" at the same instant **cannot** both succeed:
+
+1. `SELECT … FOR UPDATE` locks the slot row (PostgreSQL), serializing contenders.
+2. A **partial unique index** is the hard backstop:
+   ```sql
+   CREATE UNIQUE INDEX uq_active_booking_per_slot
+       ON bookings (slot_id) WHERE status = 'active';
+   ```
+   The second writer gets an `IntegrityError`, which the service translates into a clean *"that slot was just taken."*
+
+This is proven by a test that bypasses the service layer and asserts the **database itself** rejects a second active booking (`tests/test_booking.py::test_db_constraint_blocks_two_active_bookings`).
+
+---
+
+## ✅ Testing & CI/CD
+
+```bash
+pytest                       # unit + integration, coverage gate (≥70%)
+```
+- Suite covers auth/lockout, the concurrency guarantee, pricing, the REST API, and admin/observability.
+- The **Jenkins** pipeline gates on tests, then runs SonarCloud → Trivy → Docker build → push → deploy.
+
+```
+GitHub → Tests (pytest) → SonarCloud → Trivy → Docker build → DockerHub → Render
 ```
 
 ---
 
-## 🔑 Demo Credentials
+## 🛠️ Tech Stack
 
-| Role  | Email               | Password   |
-|-------|---------------------|------------|
-| **Admin** | `admin@parking.com` | `admin123` |
-| **User**  | *register your own account* | *your choice* |
-
----
-
-## 🎯 Features
-
-<table>
-<tr>
-<th>👤 User</th>
-<th>🛡️ Admin</th>
-</tr>
-<tr>
-<td valign="top">
-
-- Register / Login / Logout
-- Live parking grid 🟢 Available / 🔴 Occupied
-- Filter slots by vehicle type (Car / Bike / Truck)
-- Book a slot with vehicle number
-- Live parking timer (HH:MM:SS)
-- Exit & receive itemized receipt
-- Personal booking history
-
-</td>
-<td valign="top">
-
-- Statistics dashboard (slots, users, revenue)
-- Add new parking slots
-- Delete slots (guarded against occupied ones)
-- Manually toggle slot status
-- View **all** bookings system-wide
-- Live revenue tracking
-
-</td>
-</tr>
-</table>
-
----
-
-## 💰 Billing Logic
-
-A transparent, hour-based pricing model with a one-hour minimum:
-
-```
-Hours Billed = max(ceil(Duration in Minutes / 60), 1)
-Total Cost   = Hours Billed × Rate per Hour (₹)
-```
-
-> **Example:** 45 minutes at ₹30/hr → 1 hour billed → **₹30**
-
----
-
-## 🗄️ Data Model
-
-| Table | Purpose |
-|-------|---------|
-| `users` | Registered users and admins (hashed credentials, roles) |
-| `parking_slots` | All slots with location, vehicle type, rate & live status |
-| `bookings` | Each parking session — entry/exit times, duration & computed cost |
-
----
-
-## 📁 Project Structure
-
-```
-smart-parking/
-├── app.py              # Flask backend — routes, auth, billing logic
-├── schema.sql          # Database table definitions
-├── requirements.txt    # Python dependencies
-├── Dockerfile          # Container image definition
-├── Jenkinsfile         # CI/CD pipeline (Sonar → Trivy → Docker → Render)
-├── templates/          # Jinja2 templates
-│   ├── base.html       # Shared layout (navbar, footer)
-│   ├── index.html      # Landing page
-│   ├── login.html · register.html
-│   ├── dashboard.html  # User slot grid
-│   ├── booking.html · receipt.html · my_bookings.html
-│   └── admin/          # Admin dashboard, slot & booking management
-└── static/
-    ├── css/style.css   # Dark-mode premium UI
-    └── js/main.js      # Live timer, slot filter, auto-refresh
-```
-
----
-
-## 🌐 API
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/slots` | `GET` | Returns live slot statuses as JSON (powers the auto-refresh grid) |
+**Backend** Python 3.11 · Flask 3 (app factory + blueprints) · SQLAlchemy 2 · Alembic
+**Data/Infra** PostgreSQL · Redis · Celery (worker + beat)
+**Realtime/API** Flask-SocketIO · Flask-JWT-Extended · OpenAPI/Swagger
+**Security** Werkzeug hashing · Flask-WTF (CSRF) · Flask-Limiter · login lockout
+**Observability** structured logging · Sentry · Prometheus
+**Frontend** Jinja2 · vanilla JS · Chart.js · Socket.IO client · dark-mode CSS
+**DevOps** Docker (multi-stage, non-root) · docker-compose · Jenkins · SonarCloud · Trivy · Render
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
----
-
-<div align="center">
-
-**Built with ☕ and Flask** · Star ⭐ the repo if you find it useful!
-
-</div>
+<div align="center"><sub>Built as a production-grade Intelligent Transport System · © 2026</sub></div>

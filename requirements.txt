@@ -1,2 +1,35 @@
-Flask==3.0.3
-Werkzeug==3.0.3
+# Minimum versions; pip resolves the newest compatible wheels per platform.
+# --- Core ---
+Flask>=3.0.3
+Werkzeug>=3.0.3
+python-dotenv>=1.0.1
+gunicorn>=22.0.0
+
+# --- Database / ORM / migrations ---
+Flask-SQLAlchemy>=3.1.1
+Flask-Migrate>=4.0.7
+SQLAlchemy>=2.0.36
+psycopg[binary]>=3.2.10
+
+# --- Security / auth ---
+Flask-WTF>=1.2.1
+Flask-Limiter>=3.8.0
+Flask-JWT-Extended>=4.6.0
+
+# --- Caching / realtime / background ---
+Flask-Caching>=2.3.0
+redis>=5.0.7
+Flask-SocketIO>=5.3.6
+python-socketio>=5.11.3
+celery>=5.4.0
+
+# --- Observability ---
+prometheus-client>=0.20.0
+sentry-sdk[flask]>=2.10.0
+
+# --- Features ---
+qrcode[pil]>=7.4.2
+
+# --- Testing ---
+pytest>=8.3.2
+pytest-cov>=5.0.0

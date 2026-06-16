@@ -19,14 +19,14 @@
         </p>
         <div class="hero-actions">
             {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-th-large"></i> View Parking Slots
                 </a>
             {% else %}
-                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-user-plus"></i> Get Started Free
                 </a>
-                <a href="{{ url_for('login') }}" class="btn btn-outline btn-lg">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
                     <i class="fas fa-sign-in-alt"></i> Sign In
                 </a>
             {% endif %}
@@ -135,7 +135,7 @@
     <div class="cta-box glass">
         <h2>Ready to Park Smarter?</h2>
         <p>Join SmartPark ITS today — it's free and takes 30 seconds.</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
             <i class="fas fa-rocket"></i> Create Your Account
         </a>
     </div>

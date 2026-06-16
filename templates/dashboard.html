@@ -28,7 +28,22 @@
         <span class="legend-item">
             <span class="legend-dot dot-mine"></span> Your Booking
         </span>
+        <span class="legend-item" title="Live updates via WebSocket">
+            <span class="legend-dot dot-mine" id="liveDot"></span> Live
+        </span>
     </div>
+
+    {% if recommendations and not active_booking %}
+    <!-- Smart recommendations (cheapest available right now) -->
+    <div class="reco-strip glass" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.75rem 1rem;margin:1rem 0;border-radius:12px;">
+        <strong style="opacity:.85;"><i class="fas fa-wand-magic-sparkles"></i> Recommended for you:</strong>
+        {% for r in recommendations %}
+        <a href="{{ url_for('user.book_slot', slot_id=r['id']) }}" class="badge badge-available" style="text-decoration:none;">
+            {{ r['slot_number'] }} · ₹{{ r['current_rate']|int }}/hr
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Active Booking Banner -->
     {% if active_booking %}
@@ -46,8 +61,9 @@
             <div class="live-timer" id="liveTimer" data-start="{{ active_booking['start_time'] }}">
                 Calculating...
             </div>
-            <form method="POST" action="{{ url_for('exit_slot', booking_id=active_booking['id']) }}"
+            <form method="POST" action="{{ url_for('user.exit_slot', booking_id=active_booking['id']) }}"
                   onsubmit="return confirm('Confirm exit and calculate your parking cost?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-danger btn-sm" id="exitBtn">
                     <i class="fas fa-sign-out-alt"></i> Exit & Pay
                 </button>
@@ -107,12 +123,12 @@
             <!-- Location & rate -->
             <div class="slot-info">
                 <small><i class="fas fa-map-marker-alt"></i> {{ slot['location'] }}</small>
-                <small><i class="fas fa-rupee-sign"></i> ₹{{ slot['rate_per_hour']|int }}/hr</small>
+                <small data-rate><i class="fas fa-rupee-sign"></i> ₹{{ slot['rate_per_hour']|int }}/hr</small>
             </div>
 
             <!-- Book button (only if available and no active booking) -->
             {% if slot['status'] == 'available' and not active_booking %}
-                <a href="{{ url_for('book_slot', slot_id=slot['id']) }}"
+                <a href="{{ url_for('user.book_slot', slot_id=slot['id']) }}"
                    class="btn btn-book" id="bookBtn-{{ slot['id'] }}">
                     <i class="fas fa-plus"></i> Book Slot
                 </a>

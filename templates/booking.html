@@ -45,7 +45,8 @@
         </div>
 
         <!-- Booking Form -->
-        <form method="POST" action="{{ url_for('book_slot', slot_id=slot['id']) }}" class="auth-form">
+        <form method="POST" action="{{ url_for('user.book_slot', slot_id=slot['id']) }}" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="vehicle_number">
                     <i class="fas fa-id-card"></i> Vehicle Number
@@ -65,7 +66,7 @@
             </div>
 
             <div class="btn-row">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline">
                     <i class="fas fa-arrow-left"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary" id="confirmBookBtn">

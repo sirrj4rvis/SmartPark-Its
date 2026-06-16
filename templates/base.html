@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Smart Parking System — ITS Project. Find, book and manage parking slots in real time.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Smart Parking ITS{% endblock %}</title>
 
     <!-- Google Fonts -->
@@ -22,33 +23,34 @@
 <nav class="navbar">
     <div class="nav-container">
         <!-- Logo / Brand -->
-        <a href="{{ url_for('index') }}" class="nav-brand">
+        <a href="{{ url_for('public.index') }}" class="nav-brand">
             <i class="fas fa-parking nav-logo-icon"></i>
             <span>SmartPark <span class="brand-accent">ITS</span></span>
         </a>
 
         <!-- Navigation Links -->
         <ul class="nav-links">
-            <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
+            <li><a href="{{ url_for('public.index') }}" class="nav-link">Home</a></li>
 
             {% if session.get('user_id') %}
                 <!-- Logged-in user links -->
                 {% if session.get('role') == 'admin' %}
-                    <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link">Admin Panel</a></li>
-                    <li><a href="{{ url_for('manage_slots') }}" class="nav-link">Manage Slots</a></li>
-                    <li><a href="{{ url_for('all_bookings') }}" class="nav-link">All Bookings</a></li>
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Panel</a></li>
+                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
+                    <li><a href="{{ url_for('admin.manage_slots') }}" class="nav-link">Manage Slots</a></li>
+                    <li><a href="{{ url_for('admin.all_bookings') }}" class="nav-link">All Bookings</a></li>
                 {% else %}
-                    <li><a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('my_bookings') }}" class="nav-link">My Bookings</a></li>
+                    <li><a href="{{ url_for('user.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('user.my_bookings') }}" class="nav-link">My Bookings</a></li>
                 {% endif %}
                 <li>
-                    <a href="{{ url_for('logout') }}" class="nav-link btn-nav-logout">
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link btn-nav-logout">
                         <i class="fas fa-sign-out-alt"></i> Logout ({{ session.get('name', '').split()[0] }})
                     </a>
                 </li>
             {% else %}
-                <li><a href="{{ url_for('login') }}" class="nav-link">Login</a></li>
-                <li><a href="{{ url_for('register') }}" class="nav-link btn-nav-register">Sign Up</a></li>
+                <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}" class="nav-link btn-nav-register">Sign Up</a></li>
             {% endif %}
         </ul>
 
@@ -86,10 +88,12 @@
             <i class="fas fa-parking"></i>
             <strong>SmartPark ITS</strong> — Intelligent Transport System Project
         </p>
-        <p class="footer-sub">Built with Flask · SQLite · HTML/CSS/JS</p>
+        <p class="footer-sub">Real-time parking management · Dynamic pricing · © 2026</p>
     </div>
 </footer>
 
+<!-- Socket.IO client for real-time slot updates -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
 <!-- Main JS -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

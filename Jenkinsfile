@@ -21,6 +21,18 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+            steps {
+                // Gate: the pipeline fails here if any test fails or coverage < 70%.
+                bat 'set FLASK_ENV=testing && python -m pytest --junitxml=test-results.xml'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'test-results.xml'
+                }
+            }
+        }
+
         stage('SonarCloud Analysis') {
             steps {
                 script {

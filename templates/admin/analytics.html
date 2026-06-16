@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Analytics — SmartPark ITS Admin{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-chart-line"></i> Analytics</h1>
+            <p>Revenue, occupancy and demand insights.</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="stats-grid">
+        <div class="stat-card glass"><div class="stat-value">{{ kpis.total_bookings }}</div><div class="stat-label">Total Bookings</div></div>
+        <div class="stat-card glass"><div class="stat-value">{{ CURRENCY }}{{ '%.0f'|format(kpis.revenue) }}</div><div class="stat-label">Revenue</div></div>
+        <div class="stat-card glass"><div class="stat-value">{{ kpis.active_bookings }}</div><div class="stat-label">Active Now</div></div>
+        <div class="stat-card glass"><div class="stat-value">{{ (gauge.ratio * 100)|round|int }}%</div><div class="stat-label">Occupancy</div></div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card glass">
+            <h3><i class="fas fa-rupee-sign"></i> Revenue (last 14 days)</h3>
+            <canvas id="revenueChart" height="140"></canvas>
+        </div>
+        <div class="chart-card glass">
+            <h3><i class="fas fa-clock"></i> Peak Hours (bookings by hour)</h3>
+            <canvas id="peakChart" height="140"></canvas>
+        </div>
+        <div class="chart-card glass">
+            <h3><i class="fas fa-car"></i> Vehicle Mix</h3>
+            <canvas id="mixChart" height="160"></canvas>
+        </div>
+        <div class="chart-card glass">
+            <h3><i class="fas fa-gauge-high"></i> Live Occupancy</h3>
+            <canvas id="gaugeChart" height="160"></canvas>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const ACCENT = '#7c6cff', GREEN = '#2ecc71', RED = '#ff5b6e', BLUE = '#3aa0ff', AMBER = '#ffb020';
+  Chart.defaults.color = '#9aa3b2';
+  Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
+
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: { labels: {{ revenue['labels']|tojson }},
+      datasets: [{ label: 'Revenue', data: {{ revenue['values']|tojson }},
+        borderColor: ACCENT, backgroundColor: 'rgba(124,108,255,.15)', fill: true, tension: .35 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  new Chart(document.getElementById('peakChart'), {
+    type: 'bar',
+    data: { labels: {{ peaks['labels']|tojson }},
+      datasets: [{ label: 'Bookings', data: {{ peaks['values']|tojson }}, backgroundColor: BLUE }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  new Chart(document.getElementById('mixChart'), {
+    type: 'doughnut',
+    data: { labels: {{ mix['labels']|tojson }},
+      datasets: [{ data: {{ mix['values']|tojson }}, backgroundColor: [ACCENT, GREEN, AMBER, RED] }] },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('gaugeChart'), {
+    type: 'doughnut',
+    data: { labels: ['Occupied', 'Free'],
+      datasets: [{ data: [{{ gauge.occupied }}, {{ gauge.free }}], backgroundColor: [RED, GREEN] }] },
+    options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+  });
+</script>
+{% endblock %}

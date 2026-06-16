@@ -14,7 +14,8 @@
     <!-- Add Slot Form -->
     <div class="admin-form-card glass">
         <h2><i class="fas fa-plus-circle"></i> Add New Slot</h2>
-        <form method="POST" action="{{ url_for('add_slot') }}" class="admin-form" id="addSlotForm">
+        <form method="POST" action="{{ url_for('admin.add_slot') }}" class="admin-form" id="addSlotForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="admin-form-grid">
                 <div class="form-group">
                     <label for="slot_number">Slot Number</label>
@@ -83,9 +84,10 @@
                     </td>
                     <td class="action-btns">
                         <!-- Toggle status -->
-                        <form method="POST" action="{{ url_for('toggle_slot', slot_id=slot['id']) }}"
+                        <form method="POST" action="{{ url_for('admin.toggle_slot', slot_id=slot['id']) }}"
                               style="display:inline"
                               onsubmit="return confirm('Toggle status of slot {{ slot['slot_number'] }}?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-outline" title="Toggle Status"
                                     id="toggleBtn-{{ slot['id'] }}">
                                 <i class="fas fa-exchange-alt"></i>
@@ -93,9 +95,10 @@
                             </button>
                         </form>
                         <!-- Delete slot -->
-                        <form method="POST" action="{{ url_for('delete_slot', slot_id=slot['id']) }}"
+                        <form method="POST" action="{{ url_for('admin.delete_slot', slot_id=slot['id']) }}"
                               style="display:inline"
                               onsubmit="return confirm('Delete slot {{ slot['slot_number'] }}? This cannot be undone.')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-danger" title="Delete Slot"
                                     id="deleteBtn-{{ slot['id'] }}">
                                 <i class="fas fa-trash-alt"></i> Delete

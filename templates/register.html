@@ -14,7 +14,8 @@
         </div>
 
         <!-- Registration Form -->
-        <form method="POST" action="{{ url_for('register') }}" class="auth-form" id="registerForm">
+        <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form" id="registerForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="name">
                     <i class="fas fa-user"></i> Full Name
@@ -72,7 +73,7 @@
         </form>
 
         <div class="auth-footer">
-            <p>Already have an account? <a href="{{ url_for('login') }}" class="link">Sign in here</a></p>
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="link">Sign in here</a></p>
         </div>
     </div>
 </section>

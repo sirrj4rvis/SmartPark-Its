@@ -45,46 +45,58 @@ function filterSlots(type, btn) {
   });
 }
 
-/* ---- Live Slot Status Refresh (polls /api/slots every 15s) ---- */
+/* ---- Apply a slot snapshot to the grid (shared by WS + polling) ---- */
+function applySlots(slots) {
+  slots.forEach(slot => {
+    const card = document.getElementById(`slot-${slot.id}`);
+    if (!card) return;
+    card.classList.remove('available', 'occupied', 'reserved');
+    card.classList.add(slot.status);
+    const badge = card.querySelector('.badge');
+    if (badge) {
+      const label = slot.status.charAt(0).toUpperCase() + slot.status.slice(1);
+      badge.textContent = label;
+      badge.className = `badge badge-${slot.status}`;
+    }
+    // Live surge-aware rate, if shown.
+    const rateEl = card.querySelector('[data-rate]');
+    if (rateEl && slot.current_rate != null) {
+      rateEl.textContent = `₹${Math.round(slot.current_rate)}/hr`;
+    }
+  });
+}
+
+/* ---- Manual refresh button (uses /api/slots) ---- */
 function refreshSlots() {
   const icon = document.getElementById('refreshIcon');
   if (icon) icon.classList.add('fa-spin');
-
   fetch('/api/slots')
     .then(res => res.json())
-    .then(slots => {
-      slots.forEach(slot => {
-        const card = document.getElementById(`slot-${slot.id}`);
-        if (!card) return;
-
-        const wasOccupied = card.classList.contains('occupied');
-        const isNowAvail  = slot.status === 'available';
-
-        // Update card class
-        card.classList.remove('available', 'occupied');
-        card.classList.add(slot.status);
-
-        // Update badge text inside card
-        const badge = card.querySelector('.badge');
-        if (badge) {
-          badge.textContent = slot.status === 'available' ? 'Available' : 'Occupied';
-          badge.className   = `badge badge-${slot.status}`;
-        }
-      });
-    })
+    .then(applySlots)
     .catch(err => console.warn('Refresh failed:', err))
-    .finally(() => {
-      setTimeout(() => {
-        if (icon) icon.classList.remove('fa-spin');
-      }, 600);
-    });
+    .finally(() => setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 600));
 }
 
-/* ---- Auto-refresh every 20 seconds on dashboard ---- */
-function startAutoRefresh() {
-  if (document.getElementById('slotsGrid')) {
-    setInterval(refreshSlots, 20000);
+/* ---- Real-time updates via WebSockets, with polling fallback ---- */
+function startRealtime() {
+  if (!document.getElementById('slotsGrid')) return;
+
+  let usingSocket = false;
+  if (window.io) {
+    try {
+      const socket = io({ transports: ['websocket', 'polling'] });
+      socket.on('connect', () => { usingSocket = true; socket.emit('subscribe_slots'); });
+      socket.on('slot_snapshot', applySlots);
+      socket.on('slot_update', (slots) => {
+        applySlots(slots);
+        const dot = document.getElementById('liveDot');
+        if (dot) { dot.classList.add('flash'); setTimeout(() => dot.classList.remove('flash'), 600); }
+      });
+      socket.on('disconnect', () => { usingSocket = false; });
+    } catch (e) { console.warn('WS init failed, falling back to polling', e); }
   }
+  // Fallback poll only kicks in if the socket isn't delivering.
+  setInterval(() => { if (!usingSocket) refreshSlots(); }, 15000);
 }
 
 /* ---- Toggle Password Visibility ---- */
@@ -161,7 +173,7 @@ function animateSlots() {
 /* ---- Init everything on DOM ready ---- */
 document.addEventListener('DOMContentLoaded', () => {
   updateTimer();
-  startAutoRefresh();
+  startRealtime();
   initHamburger();
   initFlashDismiss();
   initFormLoading();

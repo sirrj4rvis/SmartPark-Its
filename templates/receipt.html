@@ -71,12 +71,19 @@
             <span class="total-amount">₹{{ '%.2f'|format(booking['total_cost']) }}</span>
         </div>
 
+        {% if qr %}
+        <div class="receipt-qr" style="text-align:center;margin:1.25rem 0;">
+            <img src="{{ qr }}" alt="Receipt QR" width="140" height="140" style="border-radius:8px;background:#fff;padding:6px;">
+            <div><small class="text-muted">Scan to verify this receipt</small></div>
+        </div>
+        {% endif %}
+
         <!-- Action Buttons -->
         <div class="btn-row receipt-actions">
             <button onclick="window.print()" class="btn btn-outline">
                 <i class="fas fa-print"></i> Print Receipt
             </button>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
                 <i class="fas fa-th-large"></i> Back to Dashboard
             </a>
         </div>

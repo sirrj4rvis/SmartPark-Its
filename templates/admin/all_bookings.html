@@ -10,7 +10,11 @@
             <p>Complete history of all parking sessions in the system.</p>
         </div>
         <div class="header-actions">
-            <span class="badge badge-active">{{ bookings|selectattr('status','equalto','active')|list|length }} Active</span>
+            <form method="GET" action="{{ url_for('admin.all_bookings') }}" style="display:flex;gap:.5rem;">
+                <input type="text" name="q" value="{{ search or '' }}" placeholder="Search vehicle, user, slot…"
+                       class="form-input" style="max-width:240px;">
+                <button type="submit" class="btn btn-sm btn-outline"><i class="fas fa-search"></i></button>
+            </form>
         </div>
     </div>
 
@@ -67,11 +71,18 @@
             </tbody>
         </table>
     </div>
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pagination" style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;">
+        {% if pagination.has_prev %}<a class="btn btn-sm btn-outline" href="{{ url_for('admin.all_bookings', page=pagination.prev_num, q=search) }}">‹ Prev</a>{% endif %}
+        <span class="btn btn-sm" style="pointer-events:none;">Page {{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}<a class="btn btn-sm btn-outline" href="{{ url_for('admin.all_bookings', page=pagination.next_num, q=search) }}">Next ›</a>{% endif %}
+    </div>
+    {% endif %}
     {% else %}
     <div class="empty-state">
         <i class="fas fa-inbox empty-icon"></i>
         <h3>No Bookings Found</h3>
-        <p>No bookings have been made yet.</p>
+        <p>{% if search %}No bookings match "{{ search }}".{% else %}No bookings have been made yet.{% endif %}</p>
     </div>
     {% endif %}
 </section>

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+database.db
+*.sqlite3
+.env
+coverage.xml
+.coverage
+htmlcov/
+_smoke.py
+node_modules/

@@ -57,7 +57,7 @@
                     </td>
                     <td>
                         {% if b['status'] == 'completed' %}
-                            <a href="{{ url_for('receipt', booking_id=b['id']) }}" class="btn btn-sm btn-outline">
+                            <a href="{{ url_for('user.receipt', booking_id=b['id']) }}" class="btn btn-sm btn-outline">
                                 <i class="fas fa-receipt"></i> Receipt
                             </a>
                         {% else %}
@@ -69,12 +69,19 @@
             </tbody>
         </table>
     </div>
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pagination" style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;">
+        {% if pagination.has_prev %}<a class="btn btn-sm btn-outline" href="{{ url_for('user.my_bookings', page=pagination.prev_num) }}">‹ Prev</a>{% endif %}
+        <span class="btn btn-sm" style="pointer-events:none;">Page {{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}<a class="btn btn-sm btn-outline" href="{{ url_for('user.my_bookings', page=pagination.next_num) }}">Next ›</a>{% endif %}
+    </div>
+    {% endif %}
     {% else %}
     <div class="empty-state">
         <i class="fas fa-parking empty-icon"></i>
         <h3>No Bookings Yet</h3>
         <p>You haven't made any bookings. Find a slot and park now!</p>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
             <i class="fas fa-th-large"></i> View Parking Slots
         </a>
     </div>
