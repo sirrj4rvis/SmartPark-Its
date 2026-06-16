@@ -31,16 +31,19 @@ It is intentionally engineered to production standards — not as a CRUD demo, b
 | Area | What it does |
 |------|--------------|
 | ⚡ **Real-time** | Slot status pushed to every client over **WebSockets** (Socket.IO + Redis pub/sub), with graceful polling fallback. |
-| 🔒 **Concurrency-safe booking** | Double-booking is **impossible by construction** — a partial unique DB index + row-level locking + transactional writes. |
+| 🔒 **Concurrency-safe booking** | Double-booking is **impossible by construction** — a partial unique DB index + row-level locking + transactional writes (proven by a 50-thread Postgres test). |
+| 🗺️ **Geospatial map** | Multi-lot support with coordinates; a live **Leaflet** map shows availability per lot and finds the **nearest lot** to your location (Haversine; PostGIS-ready). |
+| 💳 **Payments** | **Razorpay** checkout for the parking fee, with HMAC-SHA256 **webhook signature verification** and **idempotency** (mock provider for local dev). |
+| 📷 **ANPR** | **License-plate recognition** (OpenCV detection + Tesseract OCR) auto-fills the vehicle number from a photo. |
 | 💸 **Dynamic pricing** | Surge multiplier ramps with live occupancy (configurable threshold & cap). |
 | 🧠 **Occupancy forecasting** | Exponentially-weighted hour-of-week demand model → 24h forecast + cheapest-slot recommendations. |
 | ⏳ **Reservations** | Hold a slot with a TTL; a **Celery beat** job auto-releases expired holds. |
 | 🧾 **QR receipts** | Each completed session yields a scannable, verifiable receipt. |
 | 📊 **Analytics** | Revenue trend, peak-hour histogram, vehicle mix, live occupancy (Chart.js). |
-| 🔭 **Observability** | Structured JSON logs w/ request IDs, Sentry, Prometheus `/metrics`, `/healthz`. |
+| 🔭 **Observability** | Structured JSON logs w/ request IDs, Sentry, Prometheus `/metrics`, `/healthz`, **Grafana dashboards** + alert rules. |
 | 🔌 **REST API** | Versioned `/api/v1`, JWT-authenticated, self-documenting **Swagger UI**. |
 | 🛡️ **Hardened auth** | Hashing, CSRF, rate limiting, login lockout, secure cookies, 12-factor config. |
-| ✅ **Tested + CI** | pytest unit + integration suite (incl. a concurrency proof), coverage gate in Jenkins. |
+| ✅ **Tested + load-tested** | pytest unit + integration (incl. a real-Postgres concurrency proof), **~88% coverage** gate in CI, **Locust** load tests (0% errors, p95 43ms @ 80 users). |
 
 ---
 
@@ -127,6 +130,10 @@ curl -X POST localhost:5000/api/v1/bookings -H "Authorization: Bearer $TOKEN" \
 | `/api/v1/bookings` | GET/POST | JWT | List / create bookings |
 | `/api/v1/bookings/{id}/exit` | POST | JWT | Exit + receipt |
 | `/api/v1/analytics` | GET | JWT (admin) | KPIs + chart series |
+| `/api/v1/lots` · `/api/v1/lots/nearest` | GET | – | Lots w/ availability · nearest to a point |
+| `/api/v1/anpr` | POST | – | License-plate recognition (multipart image) |
+| `/api/v1/auth/register` · `/auth/login` | POST | – | Get a JWT |
+| `/api/webhooks/razorpay` | POST | HMAC | Payment webhook (signature-verified) |
 | `/healthz` · `/metrics` | GET | – | Liveness · Prometheus |
 
 ---
@@ -147,16 +154,25 @@ This is proven by a test that bypasses the service layer and asserts the **datab
 
 ---
 
-## ✅ Testing & CI/CD
+## ✅ Quality, Testing & Observability
 
 ```bash
-pytest                       # unit + integration, coverage gate (≥70%)
+pytest                                   # unit + integration, coverage gate (≥85%)
+locust -f loadtest/locustfile.py ...     # load test (see loadtest/README.md)
+docker compose up                        # app + db + redis + worker + beat + prometheus + grafana
 ```
-- Suite covers auth/lockout, the concurrency guarantee, pricing, the REST API, and admin/observability.
-- The **Jenkins** pipeline gates on tests, then runs SonarCloud → Trivy → Docker build → push → deploy.
+- **~88% coverage**; suite covers auth/lockout, the concurrency guarantee, pricing,
+  forecasting, geo, payments (signature + idempotency), ANPR, the REST API, and admin.
+- **Integration tests** spin a real PostgreSQL (testcontainers) and prove 50 concurrent
+  bookers racing one slot → exactly one wins.
+- **Load test baseline:** 0% errors, p95 43ms @ 80 users ([loadtest/README.md](loadtest/README.md)).
+- **Observability:** Grafana dashboards + Prometheus alert rules under [`monitoring/`](monitoring/)
+  (Grafana :3000, Prometheus :9090 via compose).
+- **Design docs:** [system design](docs/architecture.md) + [ADRs](docs/adr/).
+- The **Jenkins** pipeline gates on tests, then SonarCloud → Trivy → Docker → push → deploy:
 
 ```
-GitHub → Tests (pytest) → SonarCloud → Trivy → Docker build → DockerHub → Render
+GitHub → Tests (pytest, gated) → SonarCloud → Trivy → Docker build → DockerHub → Render
 ```
 
 ---
@@ -167,8 +183,11 @@ GitHub → Tests (pytest) → SonarCloud → Trivy → Docker build → DockerHu
 **Data/Infra** PostgreSQL · Redis · Celery (worker + beat)
 **Realtime/API** Flask-SocketIO · Flask-JWT-Extended · OpenAPI/Swagger
 **Security** Werkzeug hashing · Flask-WTF (CSRF) · Flask-Limiter · login lockout
-**Observability** structured logging · Sentry · Prometheus
-**Frontend** Jinja2 · vanilla JS · Chart.js · Socket.IO client · dark-mode CSS
+**Payments / Vision** Razorpay (HMAC webhooks) · OpenCV + Tesseract (ANPR)
+**Geo** Leaflet + OpenStreetMap · Haversine (PostGIS-ready)
+**Observability** structured logging · Sentry · Prometheus · Grafana
+**Testing** pytest · pytest-cov · testcontainers · Locust
+**Frontend** Jinja2 · vanilla JS · Chart.js · Socket.IO client · Space Grotesk/DM Sans dark UI
 **DevOps** Docker (multi-stage, non-root) · docker-compose · Jenkins · SonarCloud · Trivy · Render
 
 ---
